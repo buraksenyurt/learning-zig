@@ -108,10 +108,26 @@ pub fn main() void {
 
     // Burada da title içeriğinin ilk 10 karakterini alıp ekrana basıyoruz
     std.debug.print("{s}\n", .{title[0..10]});
+
+    std.debug.print("Temperature Conversions:\n", .{});
+    const celsius: f32 = 24.0;
+    const fahrenheit: f32 = celciusToFahrenheit(celsius);
+    std.debug.print("{d:.2} C is {d:.2} F\n", .{ celsius, fahrenheit });
+
+    const celsius2: f32 = fahrenheitToCelcius(fahrenheit);
+    std.debug.print("{d:.2} F is {d:.2} C\n", .{ fahrenheit, celsius2 });
 }
 
 // Çok basit bir aritmetik fonksiyon tanımı
 // i32 türünden iki parametre alıyor ve i32 türünden değer döndürüyor
 fn sum(x: i32, y: i32) i32 {
     return x + y;
+}
+
+fn celciusToFahrenheit(celsius: f32) f32 {
+    return (celsius * 9.0 / 5.0) + 32.0;
+}
+
+fn fahrenheitToCelcius(fahrenheit: f32) f32 {
+    return (fahrenheit - 32.0) * 5.0 / 9.0;
 }
