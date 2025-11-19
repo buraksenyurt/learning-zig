@@ -4,8 +4,8 @@ const std = @import("std");
 // klasik main fonksiyonu
 // exe olarak uygulamanın giriş noktası
 // pub keyword'e sahip olduğuna göre public erişilebilir
-// void (yani geriye bir sonuç döndürmüyor)
-pub fn main() !void {
+// void olduğu için geriye bir şey döndürmediğini ifade edebiliriz.
+pub fn main() void {
     // terminale bir bilgi yazdırıyoruz.
     // {s} string ifadelerin yerini alıyor
     // {d} decimal olduğunu düşünüyorum.
@@ -22,7 +22,7 @@ pub fn main() !void {
     };
     // person değişkeninin alanlarına erişim için indeksleme kullanılıyor
     // {d} ve {s} yer tutucularına sırasıyla person[1] ve person[0] değerleri atanıyor
-    std.debug.print("Hello there.\nMy name is {s}.\nAnd my lucky number is {d}", .{ person[0], person[1] });
+    std.debug.print("Hello there.\nMy name is {s}.\nAnd my lucky number is {d}\n", .{ person[0], person[1] });
 
     // Biraz da değişken tanımlayalım öyleyse
 
@@ -37,12 +37,21 @@ pub fn main() !void {
     // std.debug.print("Number is {}", .{number});
 
     const bigNumber: u64 = 123456789012345;
-    std.debug.print("\nBig number is {}", .{bigNumber});
+    std.debug.print("Big number is {}\n", .{bigNumber});
 
     var pi: f32 = 0.0;
     pi = 3.14;
 
-    // // Yukarıda const türünden bir tuple kullanmıştık.
+    const hexValue: u8 = 0x1A;
+    std.debug.print("Hex value is {x}\n", .{hexValue});
+
+    const binValue: u8 = 0b1010_1111;
+    std.debug.print("Binary value is {b}\n", .{binValue});
+
+    const charValue: u8 = 'A';
+    std.debug.print("Character value is {c}\n", .{charValue});
+
+    // // Yukarıda const türünden bir tuple kullanmıştık(person)
     // // Tuple'lar immutable türler. İçerikleri değiştirilemiyor anladığım kadarıyla.
     // // Söz gelimi aşağıdaki kod parçasını ele alalım.
     // // Burada tanımlı p1 tuple türünün 2nci alanının içeriğini değiştirmek istiyorum.
@@ -74,4 +83,35 @@ pub fn main() !void {
     product.price *= 0.90;
     // {d:.3} ifadesi ile ondalık kısmı 3 basamak olarak formatlıyoruz
     std.debug.print("\n{s} list price is {d:.3}", .{ product.name, product.price });
+    // Aşağıdaki yazım şeklinde özellikle name alanının nasıl yazıldığına dikkat edelim.
+    std.debug.print("\n{}\n", .{product});
+
+    const z = sum(3, 5);
+    std.debug.print("Sum of 3 and 5 is {}\n", .{z});
+
+    // std kütüphanesindeki birçok fonksiyona @ operatörü ile erişebildiğini fark ettim
+    const alpha = @mod(19, 3);
+    std.debug.print("19 % 3 = {}\n", .{alpha});
+
+    // Pek tabii modüle almak için birçok dilde olduğu gibi % operatörü de kullanılabilir
+    const beta = 19 % 3;
+    std.debug.print("19 % 3 = {}\n", .{beta});
+
+    // Aşağıdaki örnek kodda title içerisindeki karakterleri tek tek terminale yazdırıyoruz.
+    const title = "The Legend of Zig";
+
+    // title içeriği u8 türünden bir dilim (slice) olarak ifade ediliyor.
+    for (title) |c| {
+        std.debug.print("{c} ", .{c});
+    }
+    std.debug.print("\n", .{});
+
+    // Burada da title içeriğinin ilk 10 karakterini alıp ekrana basıyoruz
+    std.debug.print("{s}\n", .{title[0..10]});
+}
+
+// Çok basit bir aritmetik fonksiyon tanımı
+// i32 türünden iki parametre alıyor ve i32 türünden değer döndürüyor
+fn sum(x: i32, y: i32) i32 {
+    return x + y;
 }
