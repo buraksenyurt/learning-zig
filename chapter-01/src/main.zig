@@ -84,4 +84,48 @@ pub fn main() !void {
     }
 
     std.debug.print("\n", .{});
+
+    // Bazı durumlarda slice (dilimler) çok işe yarar.
+    // Bakalım zig'de nasıl kullanılıyorlar.
+    // Bir slice genellikle bir pointer ve uzunluk bilgisi içerir ve bellekteki başka bir serinin belli bir parçasını kullanmamızı sağlar
+    const someNumbers = [_]i32{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    const slice1 = someNumbers[0..5]; // 0ncı indisten i 5nci indise kadar (5 dahil değil) olan kısmı alıyoruz
+    printSlice(slice1);
+    printSlice(someNumbers[5..]); // Burada ise 5nci indisten sonrasını alıyoruz
+
+    // Slice'lar üzerinden değişiklik de yapabiliriz
+    // Aşağıdaki örnek kod parçasında myNumbers isimli dizinin birkaç elemanını aldığımız bir slice söz konusu
+    var myNumbers = [_]i32{ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+    var slice2 = myNumbers[2..7]; // 2nci indisten 7nciye kadar sayıları başka bir slice'a aldık
+    // Ancak dikkat edelim const yerine var kullanıyoruz çünkü slice içeriğini değiştireceğiz
+    slice2[0] = 300;
+    slice2[3] = 600;
+    printSlice(slice2);
+
+    const sensorValues: [5]f32 = .{ 24.50, 21.20, 19.90, 23.20, 21.02 };
+    var total: f32 = 0.0;
+
+    for (sensorValues) |v| {
+        total += v;
+    }
+    const average = total / sensorValues.len;
+    std.debug.print("Average value is {}\nCritical values are;\n", .{average});
+
+    for (sensorValues, 0..) |value, i| {
+        if (value > average) {
+            std.debug.print("{}. {}", .{ i, value });
+        }
+    }
+}
+
+// Burada metoda bir slice'ı parametre olarak geçiyoruz.
+// Çağırdığımız yerdeki slice'lar const olduğundan burada da parametre tanımında const kullanılıyor.
+// const'u kaldırıp build hatasına bakılabilir.
+// Fonksiyon geriye bir şey döndürmüyor, sadece ekrana slice içeriğini yazdırıyor. Bu nedenle dönüş türü void.
+fn printSlice(slice: []const i32) void {
+    std.debug.print("\n", .{});
+
+    for (slice, 0..) |element, index| {
+        std.debug.print("{d}: {d}\n", .{ index, element });
+    }
 }
