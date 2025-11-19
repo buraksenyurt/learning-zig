@@ -13,9 +13,14 @@ pub fn main() !void {
     // \n , alt satıra geç anlamında (new line)
     std.debug.print("Hello there.\nMy name is {s}.\n{s}\n{s}!\nAnd my lucky number is {d}.\n", .{ "Dam", "Van Dam", "Claude Van Dam", 23 });
 
+    // Person burada otomatik olarak bir struct veri türüne dönüşüyor
+    // İçerisinde iki alan var: birincisi string, ikincisi integer
+    // person değişkeni bu struct türünden bir örnek (instance) gibi
     var person = .{
-        "John Doe",
-        23,
+        "John Doe", // bu constant string türünden oluştu *const [8:0]u8 şeklinde bir sabit gibi.
+        23, // comptime_int, derlenme zamanında bilinen integer türünden anlamında
     };
+    // person değişkeninin alanlarına erişim için indeksleme kullanılıyor
+    // {d} ve {s} yer tutucularına sırasıyla person[1] ve person[0] değerleri atanıyor
     std.debug.print("Hello there.\nMy name is {s}.\nAnd my lucky number is {d}", .{ person[0], person[1] });
 }
