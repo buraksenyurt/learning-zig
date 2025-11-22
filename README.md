@@ -8,29 +8,24 @@ Zig programlama dilini öğrenmek, araştırmak için açılmış repodur.
 
 ## Kurulum
 
-Öncelikle [Zig Download](https://ziglang.org/download/) adresinden Windows x86_64 zip platformu için olan zip dosyasını indirdim ve sisteme açtım. Sonrasında ortam değişkenlerinden *(Environment Variables)* **path**'e **zig.exe**'nin olduğu klasör yolunu ekledim.
-
-## İlk Proje
+İlk seferde [Zig Download](https://ziglang.org/download/) adresinden Windows x86_64 zip platformu için olan zip dosyasını indirdim ve sisteme açtım. Sonrasında ortam değişkenlerinden *(Environment Variables)* **path**'e **zig.exe**'nin olduğu klasör yolunu ekledim. Ancak bu bana çok fazla sorun çıkarttı. Son sürüm olduğu için kütüphane değişikliklerine dair güncel kaynaklar, yazılar bulmak zor. Stabil bir sürüm üzerinden çalışmak için global paket yöneticilerinden yüklemek daha doğru olabilir. Bu yüzden **chocolate** ile ilgili paketi tekrardan yükledim.
 
 ```bash
-# chapter-00 klasöründe aşağıdaki komutla bir proje açıldı
-zig init
-
-# Build işlemleri build.zig dosyasında tanımlanır
-
-# programı build edip çalıştırmak için
-zig build run
-
-# root.zig çıkartıldı.
-# program kodunu build etmek için
-# --summary all parametresi ile build çıktısı özetlenir
-zig build --summary all
-
-# build işlemi sonrası oluşan executable dosyayı çalıştırma için (Windows 11)
-./zig-out/bin/chapter-00.exe
+choco install zig
+zig version
 ```
 
-## Dilin Genel Özellikleri
+> Repoyu düzenlediğim tarih itibariyle manuel yüklemedeki development versiyonı **0.16.0-dev.1364+f0a3df98d** Ancak backward compatibility çok iyi değil gibi. O yüzden stabil sürüme geçtim. Şu anda **0.14.0** sürümü üzerinde çalışıyorum.
+
+## Nasıl Çalıştırabiliriz?
+
+Dilin genel özelliklerini anlamak için hiç zig uzantılı dosyalar hazırlayıp gerekli kodlamaları yaptıktan sonra aşağıdaki gibi çalıştırabiliriz.
+
+```bash
+zig run hello_world.zig
+```
+
+## Dille İlgili Bazı Notlar
 
 - Genelde C dilinin modern bir alternatifi olarak tanımlanıyor. C türevli söz dizimine de sahip.
 - **Strongly Typed** sistemini kullanan derlemeli bir dil.

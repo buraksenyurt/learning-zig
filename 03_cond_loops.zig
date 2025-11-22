@@ -1,10 +1,6 @@
 const std = @import("std");
 
-// !void burada error union type olarak ifade ediliyor.
-// yani main fonksiyonu void olabilir veya bir error throw edilebileceğini belirtecek şekilde error void dönebilir
-pub fn main() !void {
-    // Biraz da koşullu ifadelere ve döngülere bakalım
-
+pub fn main() void {
     const myPoint = 55;
     const yourPoint = 60;
     if (myPoint > yourPoint) {

@@ -1,5 +1,4 @@
 const std = @import("std"); // standart kütüphaneyi kullanacağımız belirtiyoruz
-const lib = @import("lib.zig"); // aynı dizindeki lib.zig dosyasını import edebiliriz
 
 pub fn main() void {
     // Player türünden bir değişken tanımı
@@ -13,9 +12,6 @@ pub fn main() void {
 
     // std.debug.print("\n"); // Bu şekilde kullanamıyoruz
     std.debug.print("\n", .{}); // Şeklinde boş bir tuple vermek gerekiyor.
-
-    const content = lib.read_content(); // lib.zig dosyasındaki read_content fonksiyonunu çağırıyoruz
-    std.debug.print("{s}\n", .{content}); // fonksiyondan dönen değeri yazdırıyoruz
 }
 
 // Bir veri yapısı tanımı
