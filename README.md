@@ -49,6 +49,10 @@ zig test tests.zig
 - Ama **String** diye bir tür yok. **String** aslında **u8** türünden bir dizi olarak ele alınıyor. Örneğin **fullName** isimli bir **struct** alanı, **fullName : []const u8** şeklinde tanımlanıyor.
 - Fonksiyon parametreleri constant olarak geçiyor. Dolayısıyla metot içerisinde değerleri değiştirilemiyor *(İspat aranacak)*
 - Fonksiyonların aşırı yüklenmesi *(Function Overloading)* söz konusu değil.
+- Farklı bir modül yazmak oldukça basit. Yeni bir dosya oluşturup içerisine fonksiyon, sabit, yapı vs. tanımlayıp başka bir dosyada **@import("dosya_adı.zig")** ile kullanmak yeterli.
+- **Error Union Type** kavramı var. Buna göre bir fonksiyonun dönüş tipi olarak normal tipin yanı sıra hata tipleri de belirtilebiliyor. **!** operatörü ile belirtiliyor.
+- **Error Set Type** olarak ifade edilen bir enstrüman var. Buna göre bir hata kümesi tanımlanabiliyor ve fonksiyonlardan bu türden hatalar döndürülebiliyor.
+- **try, catch** diğer dillerden aşina olduğumu **try...catch** blokları gibi bir mekanizma sunmuyor. Hata fırlatabilecek bir fonksiyon çağrısında **try** keyword kullanılıyor. Eğer hata fırlatılırsa çağıran yere de hata iletiliyor. **catch** anahtar kelimesi ise hatayı yakalamak ve hatta alternatif değer döndürmek için kullanılıyor.
 - comptime ???
 
 > Keşfettikçe diğer özellikler de eklenecek
