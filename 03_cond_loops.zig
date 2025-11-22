@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn main() void {
+pub fn main() !void {
     const myPoint = 55;
     const yourPoint = 60;
     if (myPoint > yourPoint) {
@@ -112,6 +112,26 @@ pub fn main() void {
             std.debug.print("{}. {}", .{ i, value });
         }
     }
+
+    std.debug.print("\n", .{});
+
+    // continue ve break ifadelerini de kullanabiliyoruz.
+    // test metodunda continue kullanımına dair bir örnek var.
+    // Birde break örneği yapalım ama bu sefer standart kütüphaneden rand modülünü de kullanalım
+    var seed: u64 = undefined;
+    try std.posix.getrandom(std.mem.asBytes(&seed));
+    var prng = std.Random.DefaultPrng.init(seed);
+    const rand = prng.random();
+
+    // Bazı kaynaklarda Zig'in 0.13 versiyonunda random sayı üretimi için std.rand namespace tanımlı
+    // Ama tabii 0.14'te değişmiş. https://ziglang.org/download/0.14.0/release-notes.html adresindeki gibi release notları okumak lazım
+    for (1..1000) |i| {
+        const number = rand.int(u8);
+        if (number % 19 == 0) {
+            std.debug.print("Breaking at iteration {d} with number {d}\n", .{ i, number });
+            break;
+        }
+    }
 }
 
 // Burada metoda bir slice'ı parametre olarak geçiyoruz.
@@ -124,4 +144,30 @@ fn printSlice(slice: []const i32) void {
     for (slice, 0..) |element, index| {
         std.debug.print("{d}: {d}\n", .{ index, element });
     }
+}
+
+const expect = std.testing.expect;
+
+test "continue under some condition in while loop" {
+    var sum: u16 = 0;
+    var i: u16 = 0;
+    while (i <= 100) : (i += 1) {
+        if (i % 2 == 0) continue; // 2 ile bölünen bir sayı ise döngünün bir sonraki iterasyonundan devam et
+        sum += i;
+    }
+
+    // Birçok dilde bu şekilde fail eden bir test yazıldığında asıl hesaplanan değer de loga düşer
+    // Yani, ben 2500 bekliyordum ama 10 aldım gibisinden
+    // Zig aşağıdaki fail durumu için şöyle bir mesaj verdi
+    // try expect(sum == 10);
+
+    // // 1/1 03_cond_loops.test.use continue in while loop...FAIL (TestUnexpectedResult)
+    // // C:\ZigWindows\lib\std\testing.zig:604:14: 0x7ff746a4102f in expect (test_zcu.obj)
+    // //     if (!ok) return error.TestUnexpectedResult;
+    // //             ^
+    // // C:\Users\burak\Development\learning-zig\03_cond_loops.zig:138:5: 0x7ff746a41155 in test.use continue in while loop (test_zcu.obj)
+    // //     try expect(sum == 10);
+    // //     ^
+    // // 0 passed; 0 skipped; 1 failed.
+    try expect(sum == 2500);
 }
