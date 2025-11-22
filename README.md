@@ -22,7 +22,14 @@ zig version
 Dilin genel özelliklerini anlamak için hiç zig uzantılı dosyalar hazırlayıp gerekli kodlamaları yaptıktan sonra aşağıdaki gibi çalıştırabiliriz.
 
 ```bash
+# Doğrudan derleyip çalıştırmak için
 zig run hello_world.zig
+
+# Üzerinde çalıştığımız platfora göre derleyip executable oluşturmak için
+zig build-exe hello_world.zig
+
+# testleri koşturmak için
+zig test tests.zig
 ```
 
 ## Dille İlgili Bazı Notlar

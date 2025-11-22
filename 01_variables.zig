@@ -1,5 +1,12 @@
 const std = @import("std");
 
+// const ve var keyword'leri ile değişken tanımlanabilir
+// const ile tanımlanan değişkenlerin değeri değiştirilemez (immutable variable)
+// var ile tanımlanan değişkenlerin değeri değiştirilebilir (mutable variable)
+// Genelde değişken adından sonra : operatörü ve veri türü belirilir ancak zig derleyicisi
+// tür çıkarımı (type inference) yapabildiği için tür belirtilmese de olur.
+// Zig'in resmi dokümantasyonuna göre var yerine const kullanımı öneriliyor.
+
 pub fn main() void {
     // // number isimli değişken var ile tanımlandıktan sonra değeri hiç değiştirilmediyse
     // var number: i32 = 250;
@@ -18,6 +25,17 @@ pub fn main() void {
 
     var pi: f32 = 0.0;
     pi = 3.14;
+
+    // myLuckyNumber isimli değişken için type inference yapılıyor.
+    // 7 için comptime_int türü kullanılır.
+    const myLuckyNumber = 7;
+    std.debug.print("My lucky number is {}\n", .{myLuckyNumber});
+
+    // Javascript'çilerin aşina olduğu undefined türü gibi dursa da tamamen farklı bir kavram.
+    // Zig'de undefined bir değeri temsil etmiyor, daha çok "değer atanmamış" anlamında kullanılıyor.
+    // Bunu ilerleyen zamanlarda daha iyi kavramaya çalışacağım.
+    // const unknownType: i32 = undefined;
+    // std.debug.print("Unknown type value is {}\n", .{unknownType});
 
     const hexValue: u8 = 0x1A;
     std.debug.print("Hex value is {x}\n", .{hexValue});

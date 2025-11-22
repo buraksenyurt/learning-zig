@@ -1,9 +1,8 @@
 // standart kütüphaneyi kullanacağımızı belirtiyoruz
 const std = @import("std");
 
-// klasik main fonksiyonu
-// exe olarak uygulamanın giriş noktası
-// pub keyword'e sahip olduğuna göre public erişilebilir
+// klasik main fonksiyonumuz. executable'lar için uygulamanın giriş noktası
+// pub keyword'e sahip olduğuna göre public erişilebilir.
 // void olduğu için geriye bir şey döndürmediğini ifade edebiliriz.
 pub fn main() void {
     // terminale bir bilgi yazdırıyoruz.

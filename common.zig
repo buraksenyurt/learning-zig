@@ -4,9 +4,10 @@ pub fn ping() []const u8 {
     return "Pong!";
 }
 
-// pub fn print_file() !void {
-//     var file = try std.fs.cwd().openFile("games.data", .{});
-//     defer file.close();
-
-//     std.debug.print("Contents of games.data:\n", .{});
-// }
+// Basit ve rekürsif olarak çalışan bir faktöriyel fonksiyonu
+pub fn factorial(value:u64) u64 {
+    if (value == 0 or value == 1) {
+        return 1;
+    }
+    return value * factorial(value - 1);
+}
