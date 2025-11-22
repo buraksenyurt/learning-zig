@@ -1,4 +1,5 @@
 const std = @import("std");
+const common = @import("common.zig");
 
 pub fn main() !void {
     const myPoint = 55;
@@ -115,18 +116,10 @@ pub fn main() !void {
 
     std.debug.print("\n", .{});
 
-    // continue ve break ifadelerini de kullanabiliyoruz.
-    // test metodunda continue kullanımına dair bir örnek var.
-    // Birde break örneği yapalım ama bu sefer standart kütüphaneden rand modülünü de kullanalım
-    var seed: u64 = undefined;
-    try std.posix.getrandom(std.mem.asBytes(&seed));
-    var prng = std.Random.DefaultPrng.init(seed);
-    const rand = prng.random();
-
-    // Bazı kaynaklarda Zig'in 0.13 versiyonunda random sayı üretimi için std.rand namespace tanımlı
-    // Ama tabii 0.14'te değişmiş. https://ziglang.org/download/0.14.0/release-notes.html adresindeki gibi release notları okumak lazım
     for (1..1000) |i| {
-        const number = rand.int(u8);
+        // createRandomInteger metodu hata fırlatabileceği için try ile çağırıyoruz
+        // Bu aynı zamanda main metodunun da !void dönüş türüne sahip olmasını gerektirir
+        const number = try common.createRandomInteger();
         if (number % 19 == 0) {
             std.debug.print("Breaking at iteration {d} with number {d}\n", .{ i, number });
             break;
