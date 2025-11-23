@@ -75,13 +75,32 @@ test "curl returns Ok status for valid URL" {
     try expect(result == HttpStatusCode.Ok);
 }
 
+var divideByZeroErrorCount: usize = 0;
+
 // İstersek fonksiyondan dönecek Error Union Type tanımını hemen orada yapabiliriz
 // Aşağıdaki örnekte 0'a bölünme durumu için özel bir hata tanımladık.
 fn divideBy(numerator: f64, denominator: f64) error{DivideByZero}!f64 {
+    // errDefer ile hata oluştuğunda sayacı artırıyoruz
+    // errDefer, defer gibi düşünülebilir ama sadece bir hata oluştuğunda işletiecektir.
+    errdefer divideByZeroErrorCount += 1;
     if (denominator == 0.0) {
         return error.DivideByZero;
     }
     return numerator / denominator;
+}
+
+test "divideByZeroErrorCount increments on DivideByZero error" {
+    // errorDefer'in çalışmasını test ettiğimiz senaryo
+    const initialCount = divideByZeroErrorCount;
+    _ = divideBy(5.0, 0.0) catch {}; // burada bir hata oluşur, errdefer devreye girer, sayacı bir artırır
+    _ = divideBy(15.0, 0.0) catch {}; // burada da bir hata oluşur, sayaç tekrar artar
+    _ = divideBy(20.0, 4.0) catch {}; // burada hata oluşmaz çünkü 0'a bölünme yok, dolayısıyla errdefer devreye girmez
+    try expect(divideByZeroErrorCount == initialCount + 2); // Toplamda 2 hata oluştuğunun doğrulanması
+}
+
+test "divideBy performs division correctly" {
+    const result = try divideBy(10.0, 2.0);
+    try expect(result == 5.0);
 }
 
 test "divideBy returns DivideByZero error when denominator is zero" {
