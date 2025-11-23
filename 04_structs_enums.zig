@@ -31,6 +31,19 @@ pub fn main() void {
     // };
     // julyet.print();
 
+    // create fonksiyonunu kullanarak bir Player değişkeninin oluşturulması
+    // julyet'in değerlerinde değişiklik yapacağımız için var ile tanımladık
+    // Değişikliği changeVelocity fonksiyonu yapmakta.
+    // const ile tanımlarsak derleme hatası alırız.
+    // error: expected type '*04_structs_enums.Player', found '*const 04_structs_enums.Player'
+    var julyet = Player.create("Juli-Et", 10, 190, Velocity2D{ .x = 0.5, .y = 0.8 });
+    julyet.print();
+    julyet.changeVelocity(1.5, 2.0); // changeVelocity fonksiyonu ile hız değerlerinin değiştirilmesi
+    std.debug.print("After move:\n", .{});
+    julyet.print();
+
+    // ENUMS
+
     // Rust tip sisteminde de güçlü olan enum enstrümanı Zig'de de mevcut.
     // Örneğin GameLevel isimli bir enum tanımlayalım
     const GameLevel = enum {
@@ -132,13 +145,33 @@ const Player = struct {
     level: i32, // pozitif/negatif aralıklı 32 bit integer
     velocity: Velocity2D, // Kendi tanımladığımı bir struct'ı da alan olarak kullanabiliriz.
 
-    // Struct içerisinde fonksiyon tanımlanabilir
+    // Struct içerisinde metotlar da tanımlanabilir
     // Dikkat edileceği üzere
     // self ile Player nesnesinin o anki referansına erişiliyor diye düşünüyorum(Rust'ta benzer bir kullanım var)
+    // self tabii değişken adı. Rust'taki ile karıştırmayalım. Hatta self yerine "kendim" isimlendirmesi ile deneyebilirsiniz, çalışır.
     fn print(self: Player) void {
         std.debug.print("{s} ({d}) - Power:{d}\n", .{ self.nick, self.level, self.power });
         // {d:.2} ile float değer için noktadan sonra 2 hane göstereceğini belirtiyoruz
         std.debug.print("V->({d:.2} x {d:.2})\n", .{ self.velocity.x, self.velocity.y });
+    }
+
+    // Pek tabii aşağıdaki gibi bu struct türünden nesneleri oluşturmayı kolaylaştıracak fonksiyonlar da tanımlanabilir
+    fn create(nick: []const u8, power: u8, level: i32, velocity: Velocity2D) Player {
+        return .{
+            .nick = nick,
+            .power = power,
+            .level = level,
+            .velocity = velocity,
+        };
+    }
+
+    // changeVelocity fonksiyonu oyuncunun hızını (velocity) değiştirmek için kullanılıyor.
+    // Burada dikkat edilmesi gereken husus self parametresinin pointer türünde tanımlanmış olması.
+    // Yani fonksiyon çağrıldığında struct'ın bir kopyası değil, orijinal nesnenin adresi geçiliyor.
+    // Böylece fonksiyon içerisinde yapılan değişiklikler orijinal nesne üzerinde etkili oluyor.
+    fn changeVelocity(self: *Player, deltaX: f32, deltaY: f32) void {
+        self.velocity.x += deltaX;
+        self.velocity.y += deltaY;
     }
 };
 
