@@ -53,6 +53,7 @@ zig test tests.zig
 - **Error Union Type** kavramı var. Buna göre bir fonksiyonun dönüş tipi olarak normal tipin yanı sıra hata tipleri de belirtilebiliyor. **!** operatörü ile belirtiliyor.
 - **Error Set Type** olarak ifade edilen bir enstrüman var. Buna göre bir hata kümesi tanımlanabiliyor ve fonksiyonlardan bu türden hatalar döndürülebiliyor.
 - **try, catch** diğer dillerden aşina olduğumu **try...catch** blokları gibi bir mekanizma sunmuyor. Hata fırlatabilecek bir fonksiyon çağrısında **try** keyword kullanılıyor. Eğer hata fırlatılırsa çağıran yere de hata iletiliyor. **catch** anahtar kelimesi ise hatayı yakalamak ve hatta alternatif değer döndürmek için kullanılıyor.
+- **enum** türlerinde **integer tag type** diye değişik bir kavram var. Bir enum tanımlanırken değerlerin **u2**, **u5** gibi türlerde olabileceğini söylediğimizde sayısal değerlere sınır geliyor. **u2** için **0-3**, **u5** için **0-31** aralığında değerler atanabiliyor. Aralık dışı değer atamalarında derleme hatası alınıyor.
 - comptime ???
 
 > Keşfettikçe diğer özellikler de eklenecek
