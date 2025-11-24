@@ -23,6 +23,11 @@ pub fn main() !void {
         std.debug.print("What a score huh!\n", .{});
     }
 
+    // ?: Ternary operator Zig'de yok ama benzer bir işlevi if-else ile yapabiliyoruz
+    const age: u8 = 20;
+    const canVote = if (age >= 18) true else false;
+    std.debug.print("Can vote: {}\n", .{canVote});
+
     // if dışında switch yapısı da var. Hem statment hem de expression olarak kullanılabiliyor
     // Yukarıdaki not sistemi için bir switch ifades(expression) aşağıdaki gibi yazılabilir
     const grade: u8 = 85;
@@ -42,6 +47,16 @@ pub fn main() !void {
         1 => std.debug.print("Yellow signal: Get ready!\n", .{}),
         2 => std.debug.print("Green signal: Go ahead!\n", .{}),
         else => std.debug.print("Unknown signal!\n", .{}),
+    }
+
+    // switch ifadelerinde range ile karmaşık durumlar da ele alınabilir
+    const arrivalTime: u16 = 28;
+    switch (arrivalTime) {
+        0 => std.debug.print("On time!\n", .{}),
+        1, 2 => std.debug.print("Just a bit late!\n", .{}),
+        3...10 => std.debug.print("Quite late!\n", .{}),
+        11...30 => std.debug.print("Very late!\n", .{}),
+        else => std.debug.print("Extremely late!\n", .{}),
     }
 
     // Bir while döngüsü yazalım

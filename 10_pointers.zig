@@ -8,6 +8,11 @@ pub fn main() void {
     addOne(&number); // burada number değişkeninin referansı addOne fonksiyonuna taşınıyor
     std.debug.print("After add, {d}\n", .{number});
 
+    // // Yukarıdaki gibi bir kullanım mümkünken aşağıdaki kullanım derleme hatası verir
+    // var number2: i32 = 45;
+    // var ptrNumber: *i32 = &number2; // error: local variable is never mutated
+    // ptrNumber.* += 5;
+
     // pointer'ları const ile de tanımlayabiliriz
     const luckySeven: u8 = 7;
     std.debug.print("Lucky Seven : {d}\n", .{luckySeven});
@@ -50,10 +55,20 @@ pub fn main() void {
     // Çalışma zamanında pointer'ın 5 ileri götürülmesi sonrası her seferinde değişen u8 değerleri elde edilir
     // Bu iyi bir şey mi emin olamadım.
     std.debug.print("\nptrNumbers[0]={}, numbers[0]={}", .{ ptrNumbers[0], numbers[0] });
+
+    // Pointer aritmetiği ile bir döngü olarak ilerleyebiliriz
+    // Ancak bu sefer bellekte someNumbers dizisinin dışına çıkıyoruz ve belirsiz değerlere erişiyoruz
+    // Bu da tanımsız davranışa (undefined behavior) yol açabilir.
+    var someNumbers = [_]u8{ 1, 2, 3, 4, 5 };
+    var ptrSomeNumbers: [*]u8 = &someNumbers; // multi-item pointer
+    for (0..10) |_| {
+        std.debug.print("Pointer Address: {*}, Value: {d}\n", .{ ptrSomeNumbers, ptrSomeNumbers[0] });
+        ptrSomeNumbers += 1;
+    }
 }
 
 // addOne parametre olarak i32 türünden bir pointer almakta
-// Örneğe göre &number, değişken pointer buraya atanıyor
+// Örneğe göre &number isimli değişken pointer buraya atanıyor
 fn addOne(n: *i32) void {
     n.* += 1; // burada dereference edilen değer 1 artırılıyor
 }
