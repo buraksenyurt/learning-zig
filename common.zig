@@ -34,3 +34,28 @@ pub fn createRandomInteger() !u8 {
     const rand = prng.random();
     return rand.int(u8);
 }
+
+// statik buffer kullanılarak bir dosya içeriğini satır bazlı ekrana yazdıran fonksiyon
+// Dinamik buffer ihtiyacı olmadığı için herhangi bir Allocator kullanılmıyor
+pub fn writeLines(filePath: []const u8) !void {
+    // Dosyamızı read only modda açıyoruz
+    var file = try std.fs.cwd().openFile(filePath, .{ .mode = .read_only });
+    // Defer kullanımı söz konusu. Yani metot sonlanırken dosya da kapatılacak
+    defer file.close();
+
+    // Buffer kullanarak okuma yapacağımız için gerekli hazırlıklar
+    var bufReader = std.io.bufferedReader(file.reader());
+    var reader = bufReader.reader();
+    // 256 byte uzunluğunda bir satır okuyacağımızı belirtiyoruz
+    // 256 karakterden fazla bir satır olursa ne olur mesela?
+    var lineBuffer: [256]u8 = undefined;
+
+    // Burada sonsuz bir döngü söz konusu
+    // line değişkeni End Of File'a gelene kadar satırları reader yardımıyla lineBuffer okuyacak
+    while (true) {
+        // orelse ve try kullanımlarına dikkat
+        const line = try reader.readUntilDelimiterOrEof(&lineBuffer, '\n') orelse break;
+        // satırı ekrana yazdırıyoruz
+        std.debug.print("{s}\n", .{line});
+    }
+}
