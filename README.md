@@ -46,7 +46,7 @@ zig test tests.zig
 - Yorum satırları **//** ile yazılıyor ve birçok dilin aksine **multi-line comments** bulunmuyor. Yani `/* */` şeklinde bir kullanım yok. Rust dilindekine benzer şekilde **//!** ve **///** ile kod dokümantasyonu sağlanabiliyor.
 - Executable'ların mutlaka bir **main** fonksiyonu içermesi gerekiyor.
 - Rust dilindekine benzer primitive tipler söz konusu. **u8, i8, u16, i16, u32, i32, u64, i64, f32 ve f64** gibi. Ancak bunların haricinde **u47, i47, f16, f80 ve f128** gibi farklı sayısal türler de mevcut. Aslında u47 ve i47 hemen dikkat çekiyor hatta enum türlerinde u2,u5 gibi tag type'lar söz konusu. Bunu keyfi bit uzunlukları *(abitrary bit-width)* ile tanımlanan türler olarak düşünebiliriz. Burada da Rust dilinde olduğu gibi **usize** türü var.
-- Ama **String** diye bir tür yok. **String** aslında **u8** türünden bir dizi olarak ele alınıyor. Örneğin **fullName** isimli bir **struct** alanı, **fullName : []const u8** şeklinde tanımlanıyor.
+- Ama **String** diye bir tür yok. **String** aslında **u8** türünden bir dizi veya slice olarak ele alınıyor. Örneğin **fullName** isimli bir metinsel bir **struct** alanı, **fullName : []const u8** şeklinde tanımlanıyor.
 - Fonksiyon parametreleri **constant** olarak geçiyor. Dolayısıyla metot içerisinde parametre değerleri değiştirilemiyor *(İspat aranacak)*
 - Fonksiyonların aşırı yüklenmesi *(Function Overloading)* gibi bir durum söz konusu değil.
 - Farklı bir modül yazmak oldukça basit. Yeni bir dosya oluşturup içerisine fonksiyon, sabit, yapı vs. tanımlayıp başka bir dosyada **@import("dosya_adı.zig")** ile kullanmak yeterli.
