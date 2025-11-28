@@ -144,6 +144,40 @@ pub fn main() !void {
             break;
         }
     }
+
+    // Döngüleri birer expression olarak da kullanabiliriz
+    // Aşağıda bunun iki farklı örneği yer alıyor.
+    // İlk örnekte while döngüsünü bir epxression olarak kullanıyoruz
+    // 1'den 100'e kadar olan sayıların toplamını hesaplayıp sum değişkenine atıyoruz
+    var sum: i16 = 0;
+    const begin: u16 = 1;
+    const end: u16 = 100;
+    sum = while (true) {
+        var tempSum: i16 = 0;
+        for (begin..end + 1) |n| {
+            tempSum += @intCast(n);
+        }
+        break tempSum;
+    };
+    std.debug.print("Sum of 1 to 100 is {d}\n", .{sum});
+
+    const target: u8 = 77;
+    const arr: [5]u8 = .{ 10, 25, 50, 77, 100 };
+    const found = contains(&arr, target);
+    if (found) {
+        std.debug.print("Array contains the target value: {d}\n", .{target});
+    } else {
+        std.debug.print("Array does not contain the target value: {d}\n", .{target});
+    }
+}
+
+fn contains(arr: []const u8, target: u8) bool {
+    // Burada da bir for döngüsü expression olarak kullanılıyor
+    return for (arr) |value| {
+        if (value == target) {
+            break true;
+        }
+    } else false;
 }
 
 const expect = std.testing.expect;

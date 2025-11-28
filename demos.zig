@@ -74,6 +74,18 @@ pub fn main() !void {
     } else {
         std.debug.print("Loop completed without finding mod 13\n", .{});
     }
+
+    // 08 Zig'de bloklar birer expression olarak kabul ediliyor
+    // Buna göre bir bloğa isim verilebiliyor (Labeled Block)
+    // Hatta döngülerde de labeling yapılabiliyor
+    //todo@buraksenyurt: Bunu daha iyi bir örnekle göstermek lazım.
+}
+
+// 09 Birim testler kolay bir şekilde aşağıdaki gibi yazılabiliyor
+// Test sonucunu görmek için terminalden `zig test demos.zig` komutunu çalıştırmak yeterli.
+test "add function works correctly" {
+    const result = add(5, 7);
+    try std.testing.expect(result == 12);
 }
 
 // 05: Rust' ta fonskiyon dönüşlerinde -> operatörü vardır

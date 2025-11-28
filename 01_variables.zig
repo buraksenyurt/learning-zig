@@ -37,14 +37,52 @@ pub fn main() void {
     // const unknownType: i32 = undefined;
     // std.debug.print("Unknown type value is {}\n", .{unknownType});
 
+    // Hexadecimal (0x), Octal (0o), Binary (0b) sayısal değerler desteklenir.
     const hexValue: u8 = 0x1A;
     std.debug.print("Hex value is {x}\n", .{hexValue});
+
+    const octValue: u8 = 0o32;
+    std.debug.print("Octal value is {o}\n", .{octValue});
+
+    // Rust dilindeki gibi büyük sayıları okunabilir kılmak için alt çizgi kullanılabilir
+    const bigNumberValue: u64 = 1_000_000_000;
+    std.debug.print("Big number with underscores is {d}\n", .{bigNumberValue});
 
     const binValue: u8 = 0b1010_1111;
     std.debug.print("Binary value is {b}\n", .{binValue});
 
     const charValue: u8 = 'A';
     std.debug.print("Character value is {c}\n", .{charValue});
+
+    // cast işlemleri
+    // Aşağıdaki gibi açık bir şekilde büyük bir türden küçük bir türe dönüşüm yapmak istediğimizde
+    // dönüştürülmek istenen tür sınır dışında kalıyorsa derleyici hata verir;
+    // çünkü veri kaybı olabilir. error: type 'u8' cannot represent integer value '1000000000'
+    // const smallNumber: u8 = @intCast(bigNumberValue);
+    // const smallNumber = @as(u8, bigNumberValue);
+    // std.debug.print("Small number after cast is {d}\n", .{smallNumber});
+
+    // Overflow operatörü
+    // Bazı durumlarda veri kaybı yaşanabileceğini bilerek cast işlemi yapmak isteyebiliriz.
+    // Bu gibi durumlarda owerflow operatörü kullanılabilir.
+    // Örneğin aşağıdaki örnekte number1 ve number2 değişkenleri u8 türündendir.
+    // number2 değişkeni u8 tipinden olduğu için 0-255 aralığında değer alabilir.
+    // Ancak % operatörü ile overflow durumu bilinçli olarak kabul edilir.
+    // Bazı matematiksel işlemlerde bu tip overflow durumları istenebilir. Örneğin kriptografik algoritmalarda.
+    const number1: u8 = 255;
+    const number2: u8 = number1 +% 10; // 255 + 10 = 265 -> 265 - 256 = 9 olacaktır
+    std.debug.print("Number2 after overflow use is {d}\n", .{number2});
+
+    // Aşağıdaki kullanım ise sorunsuz çalışır zira 100 sayısı u8 türünün sınırları içindedir.
+    const numberA = 100;
+    const numberB: u8 = @intCast(numberA);
+    std.debug.print("Number B after cast is {d}\n", .{numberB});
+
+    // Metinsel bir ifadeyi sayıya dönüştürmek için std kütüphaneden parseInt metodu kullanılabilir
+    const numberStr = "1903";
+    // Üçüncü parametre kaçlık sayı düzenini kullandığımızı ifade eder. Varsayılan olarak 10 luk sayı düzenidir.
+    const convertedNumber = std.fmt.parseInt(u16, numberStr, 10) catch 0; // Eğer dönüştüremiyorsa 0 olarak kabul edilir
+    std.debug.print("Converted number from string {d}", .{convertedNumber});
 
     // // Tuple'lar immutable türler. İçerikleri değiştirilemiyor anladığım kadarıyla.
     // // Söz gelimi aşağıdaki kod parçasını ele alalım.
