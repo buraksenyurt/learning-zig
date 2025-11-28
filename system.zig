@@ -1,5 +1,13 @@
+//! # System Module
+//! This module provides basic system-level utilities and abstractions.
+//!
+//! It includes definitions for common data structures such as String and Vector (vint).
+//! The String struct encapsulates a byte slice and provides methods for common string operations.
+//! The vint struct represents a vector of integers with size tracking and element access methods.
+
 const std = @import("std");
 
+/// String struct represents a simple string abstraction
 pub const String = struct {
     data: []const u8,
 
@@ -24,7 +32,8 @@ test "String struct works correctly" {
     try std.testing.expect(str.equals("Hello, Zig!"));
 }
 
-const vint = struct {
+/// vint struct represents a simple vector of integers
+pub const vint = struct {
     size: u32,
     data: []const i32,
 

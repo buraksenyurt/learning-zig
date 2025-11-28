@@ -22,4 +22,8 @@ pub fn main() void {
     // person değişkeninin alanlarına erişim için indeksleme kullanılıyor
     // {d} ve {s} yer tutucularına sırasıyla person[1] ve person[0] değerleri atanıyor
     std.debug.print("Hello there.\nMy name is {s}.\nAnd my lucky number is {d}\n", .{ person[0], person[1] });
+
+    std.log.info("Info log", .{});
+    std.log.err("Error log", .{});
+    std.log.warn("Warning log", .{});
 }

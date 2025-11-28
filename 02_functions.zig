@@ -22,6 +22,14 @@ pub fn main() void {
     // Fonksiyon geriye bir u8 dizi dönüyor(metinsel bir ifade)
     const message = utility.ping();
     std.debug.print("{s}\n", .{message});
+
+    const s = totalOf(&.{ 1, 3, 5, 7, 9 });
+    std.debug.print("Total is {d}\n", .{s});
+
+    const s2 = totalOf(&.{ 10, 20, 30 });
+    std.debug.print("Total2 is {d}\n", .{s2});
+
+    prints(&.{ "Hello, ", "this ", "is ", "a ", "variadic ", "like ", "function!\n" });
 }
 
 // Fonksiyona parametre olarak u8 türünden bir dizi geçiliyor
@@ -55,4 +63,21 @@ fn celciusToFahrenheit(celsius: f32) f32 {
 
 fn fahrenheitToCelcius(fahrenheit: f32) f32 {
     return (fahrenheit - 32.0) * 5.0 / 9.0;
+}
+
+// Zig dilinde C# daki Console.WriteLine veya Python'daki print gibi
+// değişken sayıda parametre alan fonksiyonlar varsayılan olarak yok.
+// Ancak diziler ile benzer bir işlevsellik sağlanabilir
+fn totalOf(numbers: []const i32) i32 {
+    var total: i32 = 0;
+    for (numbers) |n| {
+        total += n;
+    }
+    return total;
+}
+
+fn prints(parts: []const []const u8) void {
+    for (parts) |part| {
+        std.debug.print("{s}", .{part});
+    }
 }

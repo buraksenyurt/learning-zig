@@ -1,6 +1,6 @@
 const std = @import("std");
 const utility = @import("utility.zig");
-const system = @import("system.zig");
+const string = @import("system.zig").String;
 
 pub fn main() !void {
     // todo@buraksenyurt: Demo için başka ilginç örnekler ekle.
@@ -14,6 +14,15 @@ pub fn main() !void {
         std.debug.print("Strings are equal: {s} == {s}\n", .{ str1, str2 });
     } else {
         std.debug.print("Strings are NOT equal: {s} != {s}\n", .{ str1, str2 });
+    }
+    // mem.eql fonksiyonu iki dizinin eşit olup olmamasının kontrolünde de kullanılır.
+    // Hoş, yukarıdaki örnekte zaten diziler kullanılıyor.
+    const arr1: [5]u8 = .{ 1, 2, 3, 4, 5 };
+    const arr2: [5]u8 = .{ 1, 2, 3, 4, 5 };
+    if (std.mem.eql(u8, &arr1, &arr2)) {
+        std.debug.print("Arrays are equal\n", .{});
+    } else {
+        std.debug.print("Arrays are NOT equal\n", .{});
     }
 
     // #01: Dış Modülden Fonksiyon Çağırma
@@ -78,7 +87,7 @@ pub fn main() !void {
 
     // 08: Zig dilinde String diye bir kavram olmayabilir ama bu
     // kendi String veri yapımızı oluşturamayacağımız anlamına gelmez.
-    const message = system.String.from("Wellcome back!");
+    const message = string.from("Wellcome back!");
     std.debug.print("{s}\n", .{message.data});
 }
 
