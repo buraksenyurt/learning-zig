@@ -21,10 +21,6 @@ pub fn println() void {
 // u8 yerine !u8 türünden bir dönüş yaptığımıza dikkat edelim zira bu metod hata fırlatabilir.
 // try ile çağrılan yerden bir hata fırlatılabilir. ! ile bu hatayı çağıran yere iletiyoruz.
 pub fn createRandomInteger() !u8 {
-    // continue ve break ifadelerini de kullanabiliyoruz.
-    // test metodunda continue kullanımına dair bir örnek var.
-    // Birde break örneği yapalım ama bu sefer standart kütüphaneden rand modülünü de kullanalım
-
     // Bazı kaynaklarda Zig'in 0.13 versiyonunda random sayı üretimi için std.rand namespace tanımlı
     // Ama tabii 0.14'te değişmiş. https://ziglang.org/download/0.14.0/release-notes.html adresindeki gibi release notları okumak lazım
 

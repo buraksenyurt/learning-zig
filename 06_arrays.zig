@@ -1,5 +1,5 @@
 const std = @import("std");
-const common = @import("common.zig");
+const utility = @import("utility.zig");
 
 // Dizi türü bir programlama dilinin vazgeçilmezi.
 // Her şey ama her şey bir dizi ile ifade edilebilir mi? Who cares? :D
@@ -13,7 +13,7 @@ pub fn main() void {
         std.debug.print("{d}, ", .{n});
     }
 
-    common.println();
+    utility.println();
 
     // Dizideki eleman sayısını belirtmek zorunda değiliz
     // _ operatörü ile bunu zig'e bırakabiliriz
@@ -22,7 +22,7 @@ pub fn main() void {
         std.debug.print("{d:.2}, ", .{p});
     }
 
-    common.println();
+    utility.println();
 
     // metinsel ifadelerden oluşan bir array tanımı
     // [_], eleman sayısını sen bul
@@ -33,7 +33,7 @@ pub fn main() void {
         std.debug.print("{d}:{s}\n", .{ id, color });
     }
 
-    common.println();
+    utility.println();
 
     // var keyword ile tanımladığımız için dizi elemanlarında değişiklik yapabiliriz.
     colors[colors.len - 1] = "cyan";
@@ -42,5 +42,5 @@ pub fn main() void {
         std.debug.print("{d}:{s}\n", .{ id, color });
     }
 
-    common.println();
+    utility.println();
 }

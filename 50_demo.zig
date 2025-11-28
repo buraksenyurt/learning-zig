@@ -1,5 +1,5 @@
 const std = @import("std");
-const common = @import("common.zig");
+const utility = @import("utility.zig");
 
 pub fn main() !void {
     // todo@buraksenyurt: Demo için başka ilginç örnekler ekle.
@@ -17,7 +17,7 @@ pub fn main() !void {
 
     // #01: Dış Modülden Fonksiyon Çağırma
     // games.data içeriğini satır satır okuma
-    try common.writeLines("games.dat");
+    try utility.writeLines("games.dat");
 
     // #02: Pointer Mevzusu
     var numbers = [_]u8{ 1, 2, 3, 4, 5 };
@@ -64,7 +64,7 @@ pub fn main() !void {
     // Zig dili de bunu destekler.
     var found: bool = false;
     for (1..10) |_| {
-        const number = common.createRandomInteger() catch 0;
+        const number = utility.createRandomInteger() catch 0;
         std.debug.print("Checking number: {d}\n", .{number});
         if (number % 13 == 0) {
             std.debug.print("Found a number divisible by 13: {d}\n", .{number});

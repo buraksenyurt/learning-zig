@@ -1,6 +1,6 @@
 const std = @import("std");
-// common.zig dosyası main ile aynı klasörde yer alıyor ve aşağıdaki gibi import edilebiliyor
-const common = @import("common.zig");
+// utility.zig dosyası main ile aynı klasörde yer alıyor ve aşağıdaki gibi import edilebiliyor
+const utility = @import("utility.zig");
 
 pub fn main() void {
     // Aşağıdaki örnek kodda title içerisindeki karakterleri tek tek terminale yazdırıyoruz.
@@ -18,9 +18,9 @@ pub fn main() void {
     const celsius2: f32 = fahrenheitToCelcius(fahrenheit);
     std.debug.print("{d:.2} F is {d:.2} C\n", .{ fahrenheit, celsius2 });
 
-    // Import ettiğimiz common modülünden bir fonksiyon çağrırıyoruz
+    // Import ettiğimiz utility modülünden bir fonksiyon çağrırıyoruz
     // Fonksiyon geriye bir u8 dizi dönüyor(metinsel bir ifade)
-    const message= common.ping();
+    const message = utility.ping();
     std.debug.print("{s}\n", .{message});
 }
 
