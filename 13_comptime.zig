@@ -34,7 +34,22 @@ pub fn main() !void {
     const arr4 = [_]f32{ 0.1, 0.3, 0.4 };
     const result2 = arrEql(f32, &arr3, &arr4);
     std.debug.print("{?}\n", .{result2});
+
+    useSource(u16, 18);
+    useSource(f32, 3.1415);
+    useSource(title, .{ .id = 1, .name = "The Legend of Zig" });
+
+    const total1 = genericSum(u8, 1, 4);
+    std.debug.print("Total1: {d}\n", .{total1});
+    const total2 = genericSum(i32, 1000, 2500);
+    std.debug.print("Total2: {d}\n", .{total2});
+    const total3 = genericSum(f32, 12.34, 45.67);
+    std.debug.print("Total3: {d}\n", .{total3});
+    // const total4 = genericSum(bool, true, false);
+    // std.debug.print("Total4: {d}\n", .{total4});
 }
+
+const title = struct { id: u8, name: []const u8 };
 
 // Bu üst alma fonksiyonunda ikinci parametre olarak comptime bir sayı alıyoruz
 // Bu sayı derleme zamanında biliniyor olmalı.
@@ -58,4 +73,14 @@ fn arrEql(comptime T: type, left: []const T, right: []const T) bool {
 
 fn iAm(comptime T: type, value: T) void {
     std.debug.print("I am {} and my type is {}\n", .{ value, @TypeOf(value) });
+}
+
+fn useSource(comptime T: type, source: T) void {
+    std.debug.print("{?}\n", .{source});
+}
+
+// Fonksiyonlardan comptime türünden parametre de dönebiliriz.
+// Aşağıdaki fonksiyon T türünden iki parametre alıyor ve T türünden bir değer döndürüyor.
+fn genericSum(comptime T: type, a: T, b: T) T {
+    return a + b;
 }

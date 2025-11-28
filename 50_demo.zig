@@ -1,5 +1,6 @@
 const std = @import("std");
 const utility = @import("utility.zig");
+const string = @import("string.zig");
 
 pub fn main() !void {
     // todo@buraksenyurt: Demo için başka ilginç örnekler ekle.
@@ -75,10 +76,10 @@ pub fn main() !void {
         std.debug.print("Loop completed without finding mod 13\n", .{});
     }
 
-    // 08 Zig'de bloklar birer expression olarak kabul ediliyor
-    // Buna göre bir bloğa isim verilebiliyor (Labeled Block)
-    // Hatta döngülerde de labeling yapılabiliyor
-    //todo@buraksenyurt: Bunu daha iyi bir örnekle göstermek lazım.
+    // 08: Zig dilinde String diye bir kavram olmayabilir ama bu
+    // kendi String veri yapımızı oluşturamayacağımız anlamına gelmez.
+    const message = string.String.from("Wellcome back!");
+    std.debug.print("{s}\n", .{message.data});
 }
 
 // 09 Birim testler kolay bir şekilde aşağıdaki gibi yazılabiliyor
