@@ -40,4 +40,49 @@ pub fn main() !void {
         Color.Green => std.debug.print("Green: {0x}\n", .{0x00FF00}),
         Color.Blue => std.debug.print("Blue: {0x}\n", .{0x0000FF}),
     }
+
+    // 04: C'ye yakın record tipleri (Record Literals)
+    const Point = struct {
+        x: i32,
+        y: i32,
+    };
+    const p: Point = .{ .x = 10, .y = 20 };
+    std.debug.print("Point Coordinates: ({d}, {d})\n", .{ p.x, p.y });
+
+    // 06: Koşullu ifadelerde && ve || yerine "and" ve "or" kullanılır
+    const a: bool = true;
+    const b: bool = false;
+    if (a and b) {
+        std.debug.print("Both a and b are true\n", .{});
+    } else if (a or b) {
+        std.debug.print("At least one of a or b is true\n", .{});
+    } else {
+        std.debug.print("Both a and b are false\n", .{});
+    }
+
+    // 07 Python dilinde döngülerde else bloğu kullanılabilir.
+    // Zig dili de bunu destekler.
+    var found: bool = false;
+    for (1..10) |_| {
+        const number = common.createRandomInteger() catch 0;
+        std.debug.print("Checking number: {d}\n", .{number});
+        if (number % 13 == 0) {
+            std.debug.print("Found a number divisible by 13: {d}\n", .{number});
+            found = true;
+            break;
+        }
+    } else {
+        std.debug.print("Loop completed without finding mod 13\n", .{});
+    }
+}
+
+// 05: Rust' ta fonskiyon dönüşlerinde -> operatörü vardır
+// // fn add(a: i32, b: i32) -> i32 {
+// //     return a + b;
+// // }
+// Zig'te -> yoktur, dönüş tipi fonksiyon adından sonra direkt belirtilir.
+// Ancak Zig daha statement odaklı bir dildir. Bu nedenle dönüş ifadesi
+// return anahtar kelimesi ile yapılır.
+fn add(a: i32, b: i32) i32 {
+    return a + b;
 }
