@@ -169,6 +169,17 @@ pub fn main() !void {
     } else {
         std.debug.print("Array does not contain the target value: {d}\n", .{target});
     }
+
+    // Döngülerde block labeling de yapabiliriz
+    outerLoop: for (1..100) |i| {
+        for (1..100) |j| {
+            const prod = i * j;
+            if (prod % 13 == 0) {
+                std.debug.print("Found a product divisible by 13: {d} * {d} = {d}\n", .{ i, j, prod });
+                break :outerLoop;
+            }
+        }
+    }
 }
 
 fn contains(arr: []const u8, target: u8) bool {

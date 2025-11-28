@@ -1,6 +1,6 @@
 const std = @import("std");
 const utility = @import("utility.zig");
-const string = @import("string.zig");
+const system = @import("system.zig");
 
 pub fn main() !void {
     // todo@buraksenyurt: Demo için başka ilginç örnekler ekle.
@@ -78,7 +78,7 @@ pub fn main() !void {
 
     // 08: Zig dilinde String diye bir kavram olmayabilir ama bu
     // kendi String veri yapımızı oluşturamayacağımız anlamına gelmez.
-    const message = string.String.from("Wellcome back!");
+    const message = system.String.from("Wellcome back!");
     std.debug.print("{s}\n", .{message.data});
 }
 
