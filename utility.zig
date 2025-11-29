@@ -17,20 +17,6 @@ pub fn println() void {
     std.debug.print("\n", .{});
 }
 
-// Bu fonksiyon rastgele sayı üretmekte.
-// u8 yerine !u8 türünden bir dönüş yaptığımıza dikkat edelim zira bu metod hata fırlatabilir.
-// try ile çağrılan yerden bir hata fırlatılabilir. ! ile bu hatayı çağıran yere iletiyoruz.
-pub fn createRandomInteger() !u8 {
-    // Bazı kaynaklarda Zig'in 0.13 versiyonunda random sayı üretimi için std.rand namespace tanımlı
-    // Ama tabii 0.14'te değişmiş. https://ziglang.org/download/0.14.0/release-notes.html adresindeki gibi release notları okumak lazım
-
-    var seed: u64 = undefined;
-    try std.posix.getrandom(std.mem.asBytes(&seed));
-    var prng = std.Random.DefaultPrng.init(seed);
-    const rand = prng.random();
-    return rand.int(u8);
-}
-
 // statik buffer kullanılarak bir dosya içeriğini satır bazlı ekrana yazdıran fonksiyon
 // Dinamik buffer ihtiyacı olmadığı için herhangi bir Allocator kullanılmıyor
 pub fn writeLines(filePath: []const u8) !void {
