@@ -1,6 +1,7 @@
 const std = @import("std");
 const utility = @import("utility.zig");
 const string = @import("system.zig").String;
+const rand = @import("rand.zig");
 
 pub fn main() !void {
     // todo@buraksenyurt: Demo için başka ilginç örnekler ekle.
@@ -74,7 +75,7 @@ pub fn main() !void {
     // Zig dili de bunu destekler.
     var found: bool = false;
     for (1..10) |_| {
-        const number = utility.createRandomInteger() catch 0;
+        const number = rand.getU8() catch 0;
         std.debug.print("Checking number: {d}\n", .{number});
         if (number % 13 == 0) {
             std.debug.print("Found a number divisible by 13: {d}\n", .{number});
@@ -89,6 +90,15 @@ pub fn main() !void {
     // kendi String veri yapımızı oluşturamayacağımız anlamına gelmez.
     const message = string.from("Wellcome back!");
     std.debug.print("{s}\n", .{message.data});
+
+    // 10: Integer türlerde özel bit boyutları kullanılabilir
+    const smallInt: i3 = 2; // 3 bit işaretli integer
+    const largeInt: u40 = 1099511627775; // 40 bit işaretsiz integer
+    std.debug.print("Small Int (i3): {d}, Large Int (u40): {d}\n", .{ smallInt, largeInt });
+    // 80 bit float türü de mevcuttur ama float türlerde kendi boyutlarımızı veremeyiz
+    // f16, f32, f64, f80, f128 türleri vardır
+    const someFloat: f80 = 3.14159265358979323846264338327950288419716939937510;
+    std.debug.print("Some Float (f80): {d}\n", .{someFloat});
 }
 
 // 09 Birim testler kolay bir şekilde aşağıdaki gibi yazılabiliyor

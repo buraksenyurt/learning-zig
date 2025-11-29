@@ -79,15 +79,36 @@ pub fn main() void {
     const binValue: u8 = 0b1010_1111;
     print("Binary value is {b}\n", .{binValue});
 
-    const charValue: u8 = 'A';
-    print("Character value is {c}\n", .{charValue});
+    // Bir karakter tanımlamak için u8 türü veya u7 türü kullanılabilir
+    // Aslında karakterler için ayrılmış özel bir tür yoktur. Her bir karakter sayısal bir değer ile ifade edilir
+    // Bu sayısal değer tahmin edileceği üzere ASCII tablosundan gelir
+    const letterA: u8 = 'A';
+    const letterB: u7 = 'B';
+    // Ancak tür belirtmesek de olur. ' ' işaretlerinde type inference yapılır
+    const letterC = 'C';
+    print("{c},{c},{c}\n", .{ letterA, letterB, letterC });
+
+    // String ifadeler için ise u8 türünden diziler kullanılır
+    const motto: []const u8 = "I am learning Zig, programming language.";
+    print("{s}\n", .{motto});
+    // birden fazla string içeriği birleştirmek için(concatenation) ++ operatörü kullanılır
+    const fullMotto = motto ++ " " ++ "It's really fun!";
+    print("{s}\n", .{fullMotto});
+    print("Type of a string is {}\n", .{@TypeOf(fullMotto)});
+
+    // string ifadeler u8 türünden diziler ile temsil edilirler
+    // var ile tanımlansalar bile değiştirilemezler (immutable)
+    // Aşağıdaki kullanım derleme hatası verir: error: cannot assign to constant
+    // var greeting: []const u8 = "Hello, World!";
+    // greeting[0] = 'B'; // Hata verir
+    // print("{s}\n", .{greeting});
 
     const oneNumber: u8 = 1;
-    print("One number is {d}\n", .{oneNumber});
-    print("One number in hex is {x}\n", .{oneNumber});
-    print("One number in octal is {o}\n", .{oneNumber});
-    print("One number in binary is {b}\n", .{oneNumber});
-    print("One number as character is {c}\n", .{oneNumber});
+    print("1 is {d}\n", .{oneNumber});
+    print("1 in hex is {x}\n", .{oneNumber});
+    print("1 in octal is {o}\n", .{oneNumber});
+    print("1 in binary is {b}\n", .{oneNumber});
+    print("1 as character is {c}\n", .{oneNumber});
 
     // cast işlemleri
     // Aşağıdaki gibi açık bir şekilde büyük bir türden küçük bir türe dönüşüm yapmak istediğimizde
@@ -164,4 +185,30 @@ pub fn main() void {
     // null değer taşıyan değişkenler için optional türler kullanılır
     const maybeNumber: ?i32 = null;
     _ = maybeNumber;
+
+    // Bir değişkenin hangi türden olduğunu öğrenmek için built-in @TypeOf fonksiyonu kullanılabilir
+    // Bir veri türü ile ilgili bilgi almak içinse @typeInfo fonksiyonu kullanılabilir
+    const varType = @TypeOf(bigNumber);
+    print("Type of bigNumber variable: {}\n", .{varType});
+    print("Type info of the bigNumber variable: {}\n", .{@typeInfo(varType)});
+
+    print("Type infos\nu8:{}\nu3:{}\nf32:{}\nbool:{}\n", .{ @typeInfo(u8), @typeInfo(u3), @typeInfo(f32), @typeInfo(bool) });
+
+    // Aşağıdaki gibi bir tipi bir variable olarak tanımlamakta mümkündür
+    // Şu anda i8 türünü temsil eden signedByte isimli bir değişken tanımladık
+    const signedByte: type = i8;
+    const point: signedByte = 10;
+    print("Type of `signedByte` is {}\n", .{@TypeOf(point)});
+    print("Value of point is {}\n", .{point});
+
+    // Bir değişkenin bellek adresini pointer türünde elde etmek de mümkündür.
+    // Burada & operatörünü kullanarak bigNumber değişkeninin adresini alıyoruz
+    const addressOfBigNumber: *const u64 = &bigNumber;
+    print("Address of bigNumber is {x}\n", .{addressOfBigNumber});
+
+    // Buradaki kullanımda ise bigNumber değişkeninin adresini
+    // usize türünde bir değişkene atıyoruz.
+    // Tahmin edileceği üzere addressOfBigNumber ile aynı adres değerini yakalayacağız
+    const anotherAddress: usize = @intFromPtr(&bigNumber);
+    print("Another address of bigNumber is {x}\n", .{anotherAddress});
 }

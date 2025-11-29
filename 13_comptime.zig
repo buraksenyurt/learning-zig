@@ -14,7 +14,7 @@ pub fn main() !void {
     // // Ancak aşağıdaki kullanım derleme zamanı hatası verir: error: unable to resolve comptime value
     // // Zira randomInt değeri çalışma zamanında biliniyor olacak oysa ki comptime ile işaretlenmiş bir parametre
     // // derleme zamanında biliniyor olmalı
-    // const randomPower = try utility.createRandomInteger();
+    // const randomPower = try rand.getU8();
     // const powerOf2 = calcPower(2, randomPower);
     // std.debug.print("{d} to the power of 2 is {d}\n", .{ randomPower, powerOf2 });
 

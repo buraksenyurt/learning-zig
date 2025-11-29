@@ -30,6 +30,19 @@ pub fn main() void {
     std.debug.print("Total2 is {d}\n", .{s2});
 
     prints(&.{ "Hello, ", "this ", "is ", "a ", "variadic ", "like ", "function!\n" });
+
+    // anytype parametreli generic fonksiyon çağrıları
+    displayValue(123);
+    displayValue("A string value");
+    displayValue(45.67);
+    displayValue(true);
+    const location = struct { x: i32, y: i32 }{ .x = 10, .y = 20 };
+    displayValue(location);
+
+    // anyerror parametreli fonksiyon çağrısı için örnekler
+    logError(error.FileNotFound);
+    logError(error.InvalidInput);
+    logError(error.OutOfMemory);
 }
 
 // Fonksiyona parametre olarak u8 türünden bir dizi geçiliyor
@@ -80,4 +93,25 @@ fn prints(parts: []const []const u8) void {
     for (parts) |part| {
         std.debug.print("{s}", .{part});
     }
+}
+
+// Sonsuz döngü içerecek fonksiyonlardan dönüş türü olarak 'noreturn' kullanılabilir
+fn infiniteLoop() noreturn {
+    while (true) {
+        std.debug.print("This loop runs forever!\n", .{});
+    }
+}
+
+// anytype türünden parametreler ile generic fonksiyonlar yazabiliriz
+// Örneğin herhangi bir türden parametre alıp ekrana basan bir fonksiyon
+// ya da log bırakan bir fonksiyon buna örnek olarak verilebilir.
+fn displayValue(value: anytype) void {
+    // anytype türündeki parametreyi ekrana basarken {any} şeklinde placeholder kullanılır
+    std.debug.print("Value: {any}\n", .{value});
+}
+
+// anytype benzeri bir de anyerror türü vardır
+// Bunu da herhangi bir hata türünü temsil etmek için kullanabiliriz
+fn logError(err: anyerror) void {
+    std.debug.print("ERROR!: {any}\n", .{err});
 }

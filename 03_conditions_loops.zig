@@ -1,5 +1,6 @@
 const std = @import("std");
 const utility = @import("utility.zig");
+const rand = @import("rand.zig");
 
 pub fn main() !void {
     const myPoint = 55;
@@ -136,9 +137,9 @@ pub fn main() !void {
     std.debug.print("\n", .{});
 
     for (1..1000) |i| {
-        // createRandomInteger metodu hata fırlatabileceği için try ile çağırıyoruz
+        // getU8 metodu hata fırlatabileceği için try ile çağırıyoruz
         // Bu aynı zamanda main metodunun da !void dönüş türüne sahip olmasını gerektirir
-        const number = try utility.createRandomInteger();
+        const number = try rand.getU8();
         if (number % 19 == 0) {
             std.debug.print("Breaking at iteration {d} with number {d}\n", .{ i, number });
             break;

@@ -1,5 +1,6 @@
 const std = @import("std");
 const utility = @import("utility.zig");
+const rand = @import("rand.zig");
 
 pub fn main() !void {
     const introMessage =
@@ -16,7 +17,7 @@ pub fn main() !void {
         \\
     ;
     std.debug.print("{s}", .{introMessage});
-    const myGuess = try getRandomNumber(1, 10);
+    const myGuess = try rand.getFromRange(1, 10);
     var guess = try readUserInput();
 
     for (1..3) |attempt| {
@@ -45,16 +46,4 @@ fn readUserInput() !i32 {
     const cleaned = std.mem.trim(u8, line, " \r\n\t");
     const value = try std.fmt.parseInt(i32, cleaned, 10);
     return value;
-}
-
-pub fn getRandomNumber(rangeStart: u8, rangeEnd: u8) !u8 {
-    var seed: u64 = undefined;
-    try std.posix.getrandom(std.mem.asBytes(&seed));
-    var prng = std.Random.DefaultPrng.init(seed);
-    const rand = prng.random();
-    while (true) {
-        const value = rand.int(u8);
-        if (value >= rangeStart and value <= rangeEnd) return value;
-    }
-    return 0;
 }
