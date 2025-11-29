@@ -27,16 +27,28 @@ pub fn main() void {
     // Diyelim ki bazı şartlarda null değer alıyor
     const xValue: ?f32 = getRandomX();
     // Asıl işin yürütüldüğü kısımda null olması halinde default bir değer ataması için
-    // orelse operatörünü aşağıdaki gibi kullanabiliriz
+    // orelse operatörünü aşağıdaki gibi kullanabiliriz (Buna `Default Optional Unwrapping` de deniyor)
     const realXValue: f32 = xValue orelse 1.0;
     std.debug.print("xValue is {?} and realXValue is {}\n", .{ xValue, realXValue });
 
-    // Eğer optional bir değer kullanıldığında bunun null olma ihtimali imkansızsa
-    // unreachable kullanarak çalışma zamanında panic oluşmasına neden olunabilir
-    // Ben bunu null ise devam etmemeli o yüzden panik oluşsun veya ortama exception fırlatılsın diye yorumladım
-    const yValue: ?f32 = null;
-    const realYValue = yValue orelse unreachable;
-    std.debug.print("{}", .{realYValue});
+    // orelse dışında .? operatörü ile de optional türden veriyi unwrapping yapabiliriz
+    // Buna "optional unwrapping" deniyor
+    // Örneğin someValue null değilse içindeki değer unwrappedValue değişkenine atanır
+    // Aksi durumda ise çalışma zamanında panic oluşur (Bunu görmek için someValue'yu null olarak set edip deneyebiliriz)
+    const someValue: ?i32 = 23; // Bunu null yaparsak panic oluşur: error: unable to unwrap null
+    const unwrappedValue: i32 = someValue.?;
+    std.debug.print("Unwrapped value is: {}\n", .{unwrappedValue});
+
+    // // Eğer optional bir değer kullanıldığında bunun null olma ihtimali imkansızsa
+    // // unreachable kullanarak çalışma zamanında panic oluşmasına neden olunabilir
+    // // Ben bunu null ise devam etmemeli o yüzden panik oluşsun veya ortama exception fırlatılsın diye yorumladım
+    // const yValue: ?f32 = null;
+    // const realYValue = yValue orelse unreachable;
+    // std.debug.print("{}", .{realYValue});
+
+    // Optional türden parametre alan fonksiyon çağrısı
+    processOptionalValue(null);
+    processOptionalValue(42);
 }
 
 // Fonksiyon geriye bir optional döndürmekte.
@@ -52,4 +64,13 @@ fn getFirstIndex(numbers: []const i32, number: i32) ?usize {
 fn getRandomX() ?f32 {
     // Bir takım şartlar oluştuğunda null dönüyor
     return null;
+}
+
+// Bir fonksiyona parametre olarak optional türden bir veri de verilebilir
+fn processOptionalValue(value: ?i32) void {
+    if (value) |v| {
+        std.debug.print("Value is: {}\n", .{v});
+    } else {
+        std.debug.print("Value is `null`\n", .{});
+    }
 }
