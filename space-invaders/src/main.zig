@@ -1,15 +1,21 @@
 const rl = @import("raylib");
-pub fn main() void {
-    const screenWidth: i32 = 800;
-    const screenHeight: i32 = 600;
+const Rectangle = @import("space_invaders").Rectangle;
+const Size = @import("space_invaders").Size;
 
-    rl.initWindow(screenWidth, screenHeight, "Space Invaders in Zig with Raylib");
+pub fn main() void {
+    const screenSize = Size{ .width = 800, .height = 600 };
+    const fps: f32 = 60;
+
+    rl.initWindow(screenSize.width, screenSize.height, "Space Invaders in Zig with Raylib");
     defer rl.closeWindow();
 
-    rl.setTargetFPS(60);
+    rl.setTargetFPS(fps);
     while (!rl.windowShouldClose()) {
         rl.beginDrawing();
         defer rl.endDrawing();
+
+        const r: Rectangle = undefined;
+        _ = r;
 
         rl.clearBackground(rl.Color.blue);
         rl.drawText("Space Invaders", 0, 0, 50, rl.Color.white);
