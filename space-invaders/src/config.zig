@@ -1,6 +1,8 @@
 const Size = @import("geometry.zig").Size;
 const Vector2D = @import("geometry.zig").Vector2D;
 
+pub const MAX_ROCKETS: u32 = 10;
+
 /// Game configuration structure.
 pub const GameConfig = struct {
     fps: f32 = 60,
@@ -14,5 +16,4 @@ pub const GameConfig = struct {
     invaderStartPosition: Vector2D = undefined,
     invaderSize: Size = undefined,
     invaderSpacing: Vector2D = undefined,
-    maxRockets: u32 = 10,
 };
