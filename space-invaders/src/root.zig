@@ -44,7 +44,20 @@ test "Rectangle collision detection" {
 }
 
 /// Game configuration structure.
-pub const GameConfig = struct { fps: f32 = 60, screenSize: Size, playerSize: Size = undefined, playerStartPosition: Vector2D = undefined, bulletSize: Size = undefined, shieldStartPosition: Vector2D = undefined, shieldSize: Size = undefined, shieldSpacing: f32 = undefined, invaderStartPosition: Vector2D = undefined, invaderSize: Size = undefined, invaderSpacing: Vector2D = undefined };
+pub const GameConfig = struct {
+    fps: f32 = 60,
+    screenSize: Size,
+    playerSize: Size = Size{ .width = 80, .height = 25 },
+    playerStartPosition: Vector2D = undefined,
+    rocketSize: Size = Size{ .width = 8, .height = 24 },
+    shieldStartPosition: Vector2D = undefined,
+    shieldSize: Size = undefined,
+    shieldSpacing: f32 = undefined,
+    invaderStartPosition: Vector2D = undefined,
+    invaderSize: Size = undefined,
+    invaderSpacing: Vector2D = undefined,
+    maxRockets: u32 = 10,
+};
 
 /// Player entity structure.
 /// Fields:
@@ -54,6 +67,8 @@ pub const GameConfig = struct { fps: f32 = 60, screenSize: Size, playerSize: Siz
 /// Methods:
 /// - init: Initializes a new player instance with a starting position and size.
 /// - update: Updates the player's position based on keyboard input.
+/// - draw: Renders the player on the screen.
+/// - getRectangle: Returns the player's bounding rectangle for collision detection.
 pub const Player = struct {
     position: Vector2D,
     size: Size,
@@ -69,6 +84,12 @@ pub const Player = struct {
         if (rl.isKeyDown(rl.KeyboardKey.left)) {
             self.position.x -= self.speed;
         }
+        if (self.position.x + self.size.width > @as(f32, @floatFromInt(rl.getScreenWidth()))) {
+            self.position.x = @as(f32, @floatFromInt(rl.getScreenWidth())) - self.size.width;
+        }
+        if (self.position.x < 0) {
+            self.position.x = 0;
+        }
     }
     pub fn draw(self: @This()) void {
         rl.drawRectangle(
@@ -78,5 +99,41 @@ pub const Player = struct {
             @intFromFloat(self.size.height),
             rl.Color.green,
         );
+    }
+    pub fn getRectangle(self: @This()) Rectangle {
+        return Rectangle{
+            .position = self.position,
+            .size = self.size,
+        };
+    }
+};
+
+pub const Rocket = struct {
+    position: Vector2D,
+    size: Size,
+    speed: f32,
+    active: bool,
+
+    pub fn init(startPos: Vector2D, size: Size) @This() {
+        return .{ .position = startPos, .size = size, .speed = 10.0, .active = false };
+    }
+    pub fn update(self: *@This()) void {
+        if (self.active) {
+            self.position.y -= self.speed;
+            if (self.position.y + self.size.height < 0) {
+                self.active = false;
+            }
+        }
+    }
+    pub fn draw(self: @This()) void {
+        if (self.active) {
+            rl.drawRectangle(
+                @intFromFloat(self.position.x),
+                @intFromFloat(self.position.y),
+                @intFromFloat(self.size.width),
+                @intFromFloat(self.size.height),
+                rl.Color.red,
+            );
+        }
     }
 };
