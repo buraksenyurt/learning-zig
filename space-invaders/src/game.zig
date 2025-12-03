@@ -3,6 +3,7 @@ const GameConfig = config.GameConfig;
 const Player = @import("entities/player.zig").Player;
 const Rocket = @import("entities/rocket.zig").Rocket;
 const Invader = @import("entities/invader.zig").Invader;
+const Vector2D = @import("geometry.zig").Vector2D;
 const rl = @import("raylib");
 
 /// Game structure encapsulating the main components of the game.
@@ -20,6 +21,8 @@ pub const Game = struct {
     player: Player,
     rockets: [config.MAX_ROCKETS]Rocket = undefined,
     invaders: [config.INVADER_ROWS][config.INVADER_COLUMNS]Invader = undefined,
+    moveTimer: f32 = 0.0,
+    invaderDirection: Vector2D = undefined,
 
     pub fn init(gameConfig: GameConfig) @This() {
         var game = Game{
@@ -29,6 +32,8 @@ pub const Game = struct {
                 gameConfig.playerSize,
             ),
             .rockets = undefined,
+            .moveTimer = 0.0,
+            .invaderDirection = Vector2D{ .x = 1.0, .y = 0.0 },
         };
 
         for (&game.rockets) |*rocket| {
@@ -70,6 +75,40 @@ pub const Game = struct {
 
         for (&self.rockets) |*rocket| {
             rocket.update();
+        }
+
+        self.moveTimer += 1.0;
+        if (self.moveTimer >= self.config.fps / 2) {
+            self.moveTimer = 0.0;
+
+            var edgeReached = false;
+            for (&self.invaders) |*row| {
+                for (row) |*invader| {
+                    if (invader.alive) {
+                        const nextX = invader.position.x + (self.invaderDirection.x * invader.speed);
+                        if (nextX < 0 or (nextX + invader.size.width) > self.config.screenSize.width) {
+                            edgeReached = true;
+                            break;
+                        }
+                    }
+                }
+                if (edgeReached)
+                    break;
+            }
+            if (edgeReached) {
+                self.invaderDirection.x *= -1.0;
+                for (&self.invaders) |*row| {
+                    for (row) |*invader| {
+                        invader.update(Vector2D{ .x = 0.0, .y = 1.0 });
+                    }
+                }
+            } else {
+                for (&self.invaders) |*row| {
+                    for (row) |*invader| {
+                        invader.update(self.invaderDirection);
+                    }
+                }
+            }
         }
     }
 

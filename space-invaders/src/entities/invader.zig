@@ -10,7 +10,7 @@ pub const Invader = struct {
     alive: bool,
 
     pub fn init(startPos: Vector2D, size: Size) @This() {
-        return .{ .position = startPos, .size = size, .speed = 5.0, .alive = true };
+        return .{ .position = startPos, .size = size, .speed = 20.0, .alive = true };
     }
 
     pub fn draw(self: @This()) void {
@@ -22,6 +22,13 @@ pub const Invader = struct {
                 @intFromFloat(self.size.height),
                 rl.Color.black,
             );
+        }
+    }
+
+    pub fn update(self: *@This(), direction: Vector2D) void {
+        if (self.alive) {
+            self.position.x += direction.x * self.speed;
+            self.position.y += direction.y * self.speed;
         }
     }
 };
