@@ -4,6 +4,7 @@ const Player = @import("entities/player.zig").Player;
 const Rocket = @import("entities/rocket.zig").Rocket;
 const Invader = @import("entities/invader.zig").Invader;
 const Vector2D = @import("geometry.zig").Vector2D;
+const Systems = @import("systems.zig");
 const rl = @import("raylib");
 
 /// Game structure encapsulating the main components of the game.
@@ -36,93 +37,22 @@ pub const Game = struct {
             .invaderDirection = Vector2D{ .x = 1.0, .y = 0.0 },
         };
 
-        for (&game.rockets) |*rocket| {
-            rocket.* = Rocket.init(.{ .x = 0, .y = 0 }, gameConfig.rocketSize);
-        }
-
-        for (&game.invaders, 0..) |*invaderRow, row| {
-            for (invaderRow, 0..) |*invader, col| {
-                invader.* = Invader.init(
-                    .{
-                        .x = game.config.invaderStartPosition.x + @as(f32, @floatFromInt(col)) * game.config.invaderSpacing.x,
-                        .y = game.config.invaderStartPosition.y + @as(f32, @floatFromInt(row)) * game.config.invaderSpacing.y,
-                    },
-                    game.config.invaderSize,
-                );
-            }
-        }
+        Systems.rocketsInitSystem(&game);
+        Systems.invadersInitSystem(&game);
 
         return game;
     }
 
-    fn shoot(self: *@This()) void {
-        for (&self.rockets) |*rocket| {
-            if (!rocket.active) {
-                rocket.position.x = self.player.position.x + self.player.size.width / 2 - rocket.size.width / 2;
-                rocket.position.y = self.player.position.y;
-                rocket.active = true;
-                break;
-            }
-        }
-    }
-
     pub fn update(self: *@This()) void {
         self.player.update();
-
-        if (rl.isKeyPressed(rl.KeyboardKey.space)) {
-            self.shoot();
-        }
-
-        for (&self.rockets) |*rocket| {
-            rocket.update();
-        }
-
-        self.moveTimer += 1.0;
-        if (self.moveTimer >= self.config.fps / 2) {
-            self.moveTimer = 0.0;
-
-            var edgeReached = false;
-            for (&self.invaders) |*row| {
-                for (row) |*invader| {
-                    if (invader.alive) {
-                        const nextX = invader.position.x + (self.invaderDirection.x * invader.speed);
-                        if (nextX < 0 or (nextX + invader.size.width) > self.config.screenSize.width) {
-                            edgeReached = true;
-                            break;
-                        }
-                    }
-                }
-                if (edgeReached)
-                    break;
-            }
-            if (edgeReached) {
-                self.invaderDirection.x *= -1.0;
-                for (&self.invaders) |*row| {
-                    for (row) |*invader| {
-                        invader.update(Vector2D{ .x = 0.0, .y = 1.0 });
-                    }
-                }
-            } else {
-                for (&self.invaders) |*row| {
-                    for (row) |*invader| {
-                        invader.update(self.invaderDirection);
-                    }
-                }
-            }
-        }
+        Systems.playerShootSystem(self);
+        Systems.rocketMoveSystem(self);
+        Systems.updateInvadersMovesSystem(self);
     }
 
     pub fn draw(self: @This()) void {
         self.player.draw();
-
-        for (&self.rockets) |*rocket| {
-            rocket.draw();
-        }
-
-        for (&self.invaders) |*row| {
-            for (row) |*invader| {
-                invader.draw();
-            }
-        }
+        Systems.rocketsDrawSystem(self);
+        Systems.invadersDrawSystem(self);
     }
 };

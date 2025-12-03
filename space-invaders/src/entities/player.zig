@@ -21,7 +21,6 @@ pub const Player = struct {
         return .{ .position = startPos, .size = size, .speed = 5.0 };
     }
     pub fn update(self: *@This()) void {
-        //todo@buraksenyurt: add boundary checks
         if (rl.isKeyDown(rl.KeyboardKey.right)) {
             self.position.x += self.speed;
         }
