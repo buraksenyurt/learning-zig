@@ -2,6 +2,7 @@ const config = @import("config.zig");
 const GameConfig = config.GameConfig;
 const Player = @import("entities/player.zig").Player;
 const Rocket = @import("entities/rocket.zig").Rocket;
+const Invader = @import("entities/invader.zig").Invader;
 const rl = @import("raylib");
 
 /// Game structure encapsulating the main components of the game.
@@ -18,6 +19,7 @@ pub const Game = struct {
     config: GameConfig,
     player: Player,
     rockets: [config.MAX_ROCKETS]Rocket = undefined,
+    invaders: [config.INVADER_ROWS][config.INVADER_COLUMNS]Invader = undefined,
 
     pub fn init(gameConfig: GameConfig) @This() {
         var game = Game{
@@ -31,6 +33,18 @@ pub const Game = struct {
 
         for (&game.rockets) |*rocket| {
             rocket.* = Rocket.init(.{ .x = 0, .y = 0 }, gameConfig.rocketSize);
+        }
+
+        for (&game.invaders, 0..) |*invaderRow, row| {
+            for (invaderRow, 0..) |*invader, col| {
+                invader.* = Invader.init(
+                    .{
+                        .x = game.config.invaderStartPosition.x + @as(f32, @floatFromInt(col)) * game.config.invaderSpacing.x,
+                        .y = game.config.invaderStartPosition.y + @as(f32, @floatFromInt(row)) * game.config.invaderSpacing.y,
+                    },
+                    game.config.invaderSize,
+                );
+            }
         }
 
         return game;
@@ -64,6 +78,12 @@ pub const Game = struct {
 
         for (&self.rockets) |*rocket| {
             rocket.draw();
+        }
+
+        for (&self.invaders) |*row| {
+            for (row) |*invader| {
+                invader.draw();
+            }
         }
     }
 };
