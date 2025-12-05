@@ -3,6 +3,7 @@ const GameConfig = config.GameConfig;
 const Player = @import("entities/player.zig").Player;
 const Rocket = @import("entities/rocket.zig").Rocket;
 const Invader = @import("entities/invader.zig").Invader;
+const EnemyBomb = @import("entities/enemyBomb.zig").EnemyBomb;
 const Vector2D = @import("geometry.zig").Vector2D;
 const Systems = @import("systems.zig");
 const rl = @import("raylib");
@@ -21,11 +22,16 @@ pub const Game = struct {
     config: GameConfig,
     player: Player,
     rockets: [config.MAX_ROCKETS]Rocket = undefined,
+    enemyBombs: [config.MAX_ENEMY_BOMBS]EnemyBomb = undefined,
     invaders: [config.INVADER_ROWS][config.INVADER_COLUMNS]Invader = undefined,
     moveTimer: f32 = 0.0,
+    enemyMoveTimer: f32 = 0.0,
+    enemyShootDelay: f32 = 1.0,
+    enemyShootChance: i32 = 5,
     invaderDirection: Vector2D = undefined,
     score: u32 = 0,
     invadersCount: u32 = 0,
+    gameOver: bool = false,
 
     pub fn init(gameConfig: GameConfig) @This() {
         var game = Game{
@@ -36,12 +42,14 @@ pub const Game = struct {
             ),
             .rockets = undefined,
             .moveTimer = 0.0,
+            .enemyMoveTimer = 0.0,
             .invaderDirection = Vector2D{ .x = 1.0, .y = 0.0 },
         };
         game.invadersCount = game.invaders.len * game.invaders[0].len;
 
         Systems.rocketsInitSystem(&game);
         Systems.invadersInitSystem(&game);
+        Systems.enemyBombsInitSystem(&game);
 
         return game;
     }
@@ -50,6 +58,8 @@ pub const Game = struct {
         self.player.update();
         Systems.collisionDetectionSystem(self);
         Systems.playerShootSystem(self);
+        Systems.enemyBombsUpdateSystem(self);
+        Systems.playerHitByBombSystem(self);
         Systems.rocketMoveSystem(self);
         Systems.updateInvadersMovesSystem(self);
     }
@@ -58,6 +68,7 @@ pub const Game = struct {
         self.player.draw();
         Systems.rocketsDrawSystem(self);
         Systems.invadersDrawSystem(self);
+        Systems.enemyBombsDrawSystem(self);
 
         self.drawHud();
     }

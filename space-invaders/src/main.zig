@@ -17,6 +17,35 @@ pub fn main() void {
 
         rl.clearBackground(rl.Color.blue);
 
+        if (game.gameOver) {
+            const gameOverText =
+                \\ Game Over!
+                \\
+                \\ Your Score: %d
+                \\
+                \\ Press ENTER to play again.
+                \\ or ESC to quit.
+            ;
+            const sizeOfText: f32 = @floatFromInt(
+                rl.measureText(gameOverText, 40),
+            );
+            const text = rl.textFormat(gameOverText, .{game.score});
+            rl.drawText(
+                text,
+                @intFromFloat(gameConfig.screenSize.width / 2 - sizeOfText / 2),
+                @intFromFloat(gameConfig.screenSize.height / 2 - 20),
+                40,
+                rl.Color.white,
+            );
+            if (rl.isKeyPressed(rl.KeyboardKey.escape)) {
+                break;
+            }
+            if (rl.isKeyPressed(rl.KeyboardKey.enter)) {
+                game = Game.init(gameConfig);
+            }
+            continue;
+        }
+
         game.update();
         game.draw();
     }

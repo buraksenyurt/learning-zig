@@ -2,6 +2,7 @@ const Game = @import("game.zig").Game;
 const Vector2D = @import("geometry.zig").Vector2D;
 const Rocket = @import("entities/rocket.zig").Rocket;
 const Invader = @import("entities/invader.zig").Invader;
+const EnemyBomb = @import("entities/enemyBomb.zig").EnemyBomb;
 const rl = @import("raylib");
 
 pub fn updateInvadersMovesSystem(self: *Game) void {
@@ -79,6 +80,43 @@ pub fn rocketsInitSystem(game: *Game) void {
     }
 }
 
+pub fn enemyBombsInitSystem(game: *Game) void {
+    for (&game.enemyBombs) |*bomb| {
+        bomb.* = EnemyBomb.init(.{ .x = 0, .y = 0 }, game.config.enemyBombSize);
+    }
+}
+
+pub fn enemyBombsUpdateSystem(game: *Game) void {
+    for (&game.enemyBombs) |*bomb| {
+        bomb.update();
+    }
+    game.enemyMoveTimer += 1.0;
+    if (game.enemyMoveTimer >= game.enemyShootDelay * game.config.fps) {
+        game.enemyMoveTimer = 0.0;
+        for (&game.invaders) |*row| {
+            for (row) |*invader| {
+                if (invader.alive and rl.getRandomValue(0, 100) < game.enemyShootChance) {
+                    for (&game.enemyBombs) |*bomb| {
+                        if (!bomb.active) {
+                            bomb.position.x = invader.position.x + invader.size.width / 2 - bomb.size.width / 2;
+                            bomb.position.y = invader.position.y + invader.size.height;
+                            bomb.active = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+pub fn enemyBombsDrawSystem(game: Game) void {
+    for (&game.enemyBombs) |*bomb| {
+        bomb.draw();
+    }
+}
+
 pub fn invadersInitSystem(game: *Game) void {
     for (&game.invaders, 0..) |*invaderRow, row| {
         for (invaderRow, 0..) |*invader, col| {
@@ -110,6 +148,20 @@ pub fn collisionDetectionSystem(game: *Game) void {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+pub fn playerHitByBombSystem(game: *Game) void {
+    const playerRect = game.player.getRectangle();
+    for (&game.enemyBombs) |*bomb| {
+        if (bomb.active) {
+            const bombRect = bomb.getRectangle();
+            if (playerRect.collides(bombRect)) {
+                bomb.active = false;
+                game.gameOver = true;
+                break;
             }
         }
     }
