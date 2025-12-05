@@ -166,3 +166,7 @@ pub fn playerHitByBombSystem(game: *Game) void {
         }
     }
 }
+
+pub fn isPlayerWin(game: Game) bool {
+    return game.invadersCount == 0;
+}
