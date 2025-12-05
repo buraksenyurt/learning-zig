@@ -19,7 +19,5 @@ pub fn main() void {
 
         game.update();
         game.draw();
-
-        rl.drawText("Space Invaders", 0, 0, 50, rl.Color.white);
     }
 }

@@ -104,6 +104,8 @@ pub fn collisionDetectionSystem(game: *Game) void {
                         if (rocketRect.collides(invaderRect)) {
                             invader.alive = false;
                             rocket.active = false;
+                            game.score += 10;
+                            game.invadersCount -= 1;
                             break;
                         }
                     }
