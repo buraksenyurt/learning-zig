@@ -44,7 +44,7 @@ pub const Player = struct {
         );
     }
     pub fn getRectangle(self: @This()) Rectangle {
-        return Rectangle{
+        return .{
             .position = self.position,
             .size = self.size,
         };

@@ -45,6 +45,7 @@ pub const Game = struct {
 
     pub fn update(self: *@This()) void {
         self.player.update();
+        Systems.collisionDetectionSystem(self);
         Systems.playerShootSystem(self);
         Systems.rocketMoveSystem(self);
         Systems.updateInvadersMovesSystem(self);

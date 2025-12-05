@@ -1,5 +1,6 @@
 const Vector2D = @import("../geometry.zig").Vector2D;
 const Size = @import("../geometry.zig").Size;
+const Rectangle = @import("../geometry.zig").Rectangle;
 const rl = @import("raylib");
 
 /// Rocket entity structure.
@@ -39,5 +40,12 @@ pub const Rocket = struct {
                 rl.Color.red,
             );
         }
+    }
+
+    pub fn getRectangle(self: @This()) Rectangle {
+        return .{
+            .position = self.position,
+            .size = self.size,
+        };
     }
 };

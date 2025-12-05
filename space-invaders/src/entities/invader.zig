@@ -31,4 +31,11 @@ pub const Invader = struct {
             self.position.y += direction.y * self.speed;
         }
     }
+
+    pub fn getRectangle(self: @This()) Rectangle {
+        return .{
+            .position = self.position,
+            .size = self.size,
+        };
+    }
 };
