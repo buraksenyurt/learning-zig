@@ -3,16 +3,6 @@ const Size = @import("../geometry.zig").Size;
 const Rectangle = @import("../geometry.zig").Rectangle;
 const rl = @import("raylib");
 
-/// Rocket entity structure.
-/// Fields:
-/// - position: The current position of the rocket.
-/// - size: The size dimensions of the rocket.
-/// - speed: The movement speed of the rocket.
-/// - active: Indicates whether the rocket is currently active (fired).
-/// Methods:
-/// - init: Initializes a new rocket instance with a starting position and size.
-/// - update: Updates the rocket's position if it is active.
-/// - draw: Renders the rocket on the screen if it is active.
 pub const Rocket = struct {
     position: Vector2D,
     size: Size,

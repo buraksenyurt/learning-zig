@@ -8,7 +8,7 @@ pub fn fire(game: *Game) void {
                 rocket.position.x = game.player.position.x + game.player.size.width / 2 - rocket.size.width / 2;
                 rocket.position.y = game.player.position.y;
                 rocket.active = true;
-                game.score.totalFiredRockets += 1;
+                game.gameState.totalFiredRockets += 1;
                 break;
             }
         }

@@ -2,7 +2,7 @@ const Game = @import("../game.zig").Game;
 const rl = @import("raylib");
 const EnemyBomb = @import("../entities/enemyBomb.zig").EnemyBomb;
 
-pub fn initAll(game: *Game) void {
+pub fn initAllBombs(game: *Game) void {
     for (&game.enemyBombs) |*bomb| {
         bomb.* = EnemyBomb.init(.{ .x = 0, .y = 0 }, game.config.enemyBombSize);
     }
@@ -33,7 +33,7 @@ pub fn updateAll(game: *Game) void {
     }
 }
 
-pub fn drawAll(game: Game) void {
+pub fn drawAllBombs(game: Game) void {
     for (&game.enemyBombs) |*bomb| {
         bomb.draw();
     }
