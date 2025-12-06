@@ -5,19 +5,9 @@ const Rocket = @import("entities/rocket.zig").Rocket;
 const Invader = @import("entities/invader.zig").Invader;
 const EnemyBomb = @import("entities/enemyBomb.zig").EnemyBomb;
 const Vector2D = @import("geometry.zig").Vector2D;
-const Systems = @import("systems.zig");
+const Systems = @import("systems/mod.zig").Systems;
 const rl = @import("raylib");
 
-/// Game structure encapsulating the main components of the game.
-/// Fields:
-/// - config: The game configuration settings.
-/// - player: The player entity.
-/// - rockets: An array of rocket entities.
-/// Methods:
-/// - init: Initializes a new game instance with the provided configuration.
-/// - shoot: Handles the shooting mechanism for the player.
-/// - update: Updates the game state, including player and rockets.
-/// - draw: Renders the game entities on the screen.
 pub const Game = struct {
     config: GameConfig,
     player: Player,
@@ -47,28 +37,28 @@ pub const Game = struct {
         };
         game.invadersCount = game.invaders.len * game.invaders[0].len;
 
-        Systems.rocketsInitSystem(&game);
-        Systems.invadersInitSystem(&game);
-        Systems.enemyBombsInitSystem(&game);
+        Systems.rocket.initAll(&game);
+        Systems.invaders.initAll(&game);
+        Systems.enemy.initAll(&game);
 
         return game;
     }
 
     pub fn update(self: *@This()) void {
         self.player.update();
-        Systems.collisionDetectionSystem(self);
-        Systems.playerShootSystem(self);
-        Systems.enemyBombsUpdateSystem(self);
-        Systems.playerHitByBombSystem(self);
-        Systems.rocketMoveSystem(self);
-        Systems.updateInvadersMovesSystem(self);
+        Systems.collision.detect(self);
+        Systems.player.fire(self);
+        Systems.enemy.updateAll(self);
+        Systems.player.detectHits(self);
+        Systems.rocket.moveAll(self);
+        Systems.invaders.updateMoves(self);
     }
 
     pub fn draw(self: @This()) void {
         self.player.draw();
-        Systems.rocketsDrawSystem(self);
-        Systems.invadersDrawSystem(self);
-        Systems.enemyBombsDrawSystem(self);
+        Systems.rocket.drawAll(self);
+        Systems.invaders.drawAll(self);
+        Systems.enemy.drawAll(self);
 
         self.drawHud();
     }
