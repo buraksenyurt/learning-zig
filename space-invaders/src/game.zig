@@ -6,6 +6,7 @@ const Invader = @import("entities/invader.zig").Invader;
 const EnemyBomb = @import("entities/enemyBomb.zig").EnemyBomb;
 const Vector2D = @import("geometry.zig").Vector2D;
 const Systems = @import("systems/mod.zig").Systems;
+const Score = @import("resources/score.zig").Score;
 const rl = @import("raylib");
 
 pub const Game = struct {
@@ -19,8 +20,7 @@ pub const Game = struct {
     enemyShootDelay: f32 = 1.0,
     enemyShootChance: i32 = 5,
     invaderDirection: Vector2D = undefined,
-    score: u32 = 0,
-    invadersCount: u32 = 0,
+    score: Score,
     gameOver: bool = false,
 
     pub fn init(gameConfig: GameConfig) @This() {
@@ -34,8 +34,8 @@ pub const Game = struct {
             .moveTimer = 0.0,
             .enemyMoveTimer = 0.0,
             .invaderDirection = Vector2D{ .x = 1.0, .y = 0.0 },
+            .score = Score.init(config.INVADER_ROWS * config.INVADER_COLUMNS),
         };
-        game.invadersCount = game.invaders.len * game.invaders[0].len;
 
         Systems.rocket.initAll(&game);
         Systems.invaders.initAll(&game);
@@ -46,6 +46,7 @@ pub const Game = struct {
 
     pub fn update(self: *@This()) void {
         self.player.update();
+
         Systems.collision.detect(self);
         Systems.player.fire(self);
         Systems.enemy.updateAll(self);
@@ -56,6 +57,7 @@ pub const Game = struct {
 
     pub fn draw(self: @This()) void {
         self.player.draw();
+
         Systems.rocket.drawAll(self);
         Systems.invaders.drawAll(self);
         Systems.enemy.drawAll(self);
@@ -64,7 +66,12 @@ pub const Game = struct {
     }
 
     fn drawHud(self: @This()) void {
-        const scoreText = rl.textFormat("Score: %d Invaders: %d", .{ self.score, self.invadersCount });
+        const scoreText = rl.textFormat("Score: %d Invaders: (%d/%d) Fired Rockets: %d", .{
+            self.score.value,
+            self.score.remainingInvaders,
+            self.score.totalInvaders,
+            self.score.totalFiredRockets,
+        });
         rl.drawText(scoreText, 20, @intFromFloat(self.config.screenSize.height - 20.0), 20, rl.Color.white);
 
         const titleText = rl.textFormat("Space Invaders", .{});

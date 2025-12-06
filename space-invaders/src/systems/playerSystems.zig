@@ -1,13 +1,14 @@
 const Game = @import("../game.zig").Game;
 const rl = @import("raylib");
 
-pub fn fire(self: *Game) void {
+pub fn fire(game: *Game) void {
     if (rl.isKeyPressed(rl.KeyboardKey.space)) {
-        for (&self.rockets) |*rocket| {
+        for (&game.rockets) |*rocket| {
             if (!rocket.active) {
-                rocket.position.x = self.player.position.x + self.player.size.width / 2 - rocket.size.width / 2;
-                rocket.position.y = self.player.position.y;
+                rocket.position.x = game.player.position.x + game.player.size.width / 2 - rocket.size.width / 2;
+                rocket.position.y = game.player.position.y;
                 rocket.active = true;
+                game.score.totalFiredRockets += 1;
                 break;
             }
         }
@@ -26,8 +27,4 @@ pub fn detectHits(game: *Game) void {
             }
         }
     }
-}
-
-pub fn isPlayerWin(game: Game) bool {
-    return game.invadersCount == 0;
 }

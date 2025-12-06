@@ -13,7 +13,7 @@ pub const GameConfig = struct {
     playerSize: Size = Size{ .width = 80, .height = 25 },
     playerStartPosition: Vector2D = undefined,
     rocketSize: Size = Size{ .width = 8, .height = 24 },
-    enemyBombSize: Size = Size{ .width = 8, .height = 24 },
+    enemyBombSize: Size = Size{ .width = 10, .height = 10 },
     shieldStartPosition: Vector2D = undefined,
     shieldSize: Size = undefined,
     shieldSpacing: f32 = undefined,

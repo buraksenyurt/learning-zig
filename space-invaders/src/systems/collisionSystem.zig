@@ -11,8 +11,8 @@ pub fn detect(game: *Game) void {
                         if (rocketRect.collides(invaderRect)) {
                             invader.alive = false;
                             rocket.active = false;
-                            game.score += 10;
-                            game.invadersCount -= 1;
+                            game.score.value += 10;
+                            game.score.remainingInvaders -= 1;
                             break;
                         }
                     }

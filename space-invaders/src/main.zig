@@ -29,13 +29,13 @@ pub fn main() void {
             const sizeOfText: f32 = @floatFromInt(
                 rl.measureText(gameOverText, 40),
             );
-            const text = rl.textFormat(gameOverText, .{game.score});
+            const text = rl.textFormat(gameOverText, .{game.score.value});
             rl.drawText(
                 text,
                 @intFromFloat(gameConfig.screenSize.width / 2 - sizeOfText / 2),
                 @intFromFloat(gameConfig.screenSize.height / 2 - 200),
                 40,
-                rl.Color.white,
+                rl.Color.red,
             );
             if (rl.isKeyPressed(rl.KeyboardKey.escape)) {
                 break;
@@ -45,7 +45,7 @@ pub fn main() void {
             }
             continue;
         }
-        if (game.invadersCount == 0) {
+        if (game.score.remainingInvaders == 0) {
             const gameOverText =
                 \\ You Win!
                 \\
@@ -57,7 +57,7 @@ pub fn main() void {
             const sizeOfText: f32 = @floatFromInt(
                 rl.measureText(gameOverText, 40),
             );
-            const text = rl.textFormat(gameOverText, .{game.score});
+            const text = rl.textFormat(gameOverText, .{game.score.value});
             rl.drawText(
                 text,
                 @intFromFloat(gameConfig.screenSize.width / 2 - sizeOfText / 2),
