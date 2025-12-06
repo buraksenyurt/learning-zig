@@ -27,7 +27,7 @@ pub const EnemyBomb = struct {
                 @intFromFloat(self.position.y),
                 @intFromFloat(self.size.width),
                 @intFromFloat(self.size.height),
-                rl.Color.green,
+                rl.Color.light_gray.alpha(0.5),
             );
         }
     }

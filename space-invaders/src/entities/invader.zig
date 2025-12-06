@@ -8,9 +8,10 @@ pub const Invader = struct {
     size: Size,
     speed: f32,
     alive: bool,
+    color: rl.Color,
 
     pub fn init(startPos: Vector2D, size: Size) @This() {
-        return .{ .position = startPos, .size = size, .speed = 20.0, .alive = true };
+        return .{ .position = startPos, .size = size, .speed = 20.0, .alive = true, .color = getRandomColor() };
     }
 
     pub fn draw(self: @This()) void {
@@ -20,7 +21,7 @@ pub const Invader = struct {
                 @intFromFloat(self.position.y),
                 @intFromFloat(self.size.width),
                 @intFromFloat(self.size.height),
-                rl.Color.black,
+                self.color,
             );
         }
     }
@@ -39,3 +40,19 @@ pub const Invader = struct {
         };
     }
 };
+
+fn getRandomColor() rl.Color {
+    const colors = [_]rl.Color{
+        rl.Color.violet.alpha(0.9),
+        rl.Color.dark_green.alpha(0.9),
+        rl.Color.beige.alpha(0.9),
+        rl.Color.brown.alpha(0.9),
+        rl.Color.orange.alpha(0.9),
+        rl.Color.magenta.alpha(0.9),
+        rl.Color.sky_blue.alpha(0.9),
+        rl.Color.lime.alpha(0.9),
+        rl.Color.yellow.alpha(0.9),
+    };
+    const randomIndex: usize = @intCast(rl.getRandomValue(0, colors.len - 1));
+    return colors[randomIndex];
+}

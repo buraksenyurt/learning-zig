@@ -40,7 +40,7 @@ pub const Player = struct {
             @intFromFloat(self.position.y),
             @intFromFloat(self.size.width),
             @intFromFloat(self.size.height),
-            rl.Color.green,
+            rl.Color.white.alpha(0.9),
         );
     }
     pub fn getRectangle(self: @This()) Rectangle {

@@ -37,7 +37,7 @@ pub const Rocket = struct {
                 @intFromFloat(self.position.y),
                 @intFromFloat(self.size.width),
                 @intFromFloat(self.size.height),
-                rl.Color.red,
+                rl.Color.violet.alpha(0.8),
             );
         }
     }

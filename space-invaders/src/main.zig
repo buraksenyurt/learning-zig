@@ -15,7 +15,7 @@ pub fn main() void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(rl.Color.blue);
+        rl.clearBackground(rl.Color.black.alpha(0.8));
 
         if (game.gameOver) {
             const gameOverText =
@@ -33,7 +33,7 @@ pub fn main() void {
             rl.drawText(
                 text,
                 @intFromFloat(gameConfig.screenSize.width / 2 - sizeOfText / 2),
-                @intFromFloat(gameConfig.screenSize.height / 2 - 20),
+                @intFromFloat(gameConfig.screenSize.height / 2 - 200),
                 40,
                 rl.Color.white,
             );
@@ -61,7 +61,7 @@ pub fn main() void {
             rl.drawText(
                 text,
                 @intFromFloat(gameConfig.screenSize.width / 2 - sizeOfText / 2),
-                @intFromFloat(gameConfig.screenSize.height / 2 - 20),
+                @intFromFloat(gameConfig.screenSize.height - 200),
                 40,
                 rl.Color.yellow,
             );
