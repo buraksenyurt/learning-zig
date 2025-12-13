@@ -43,6 +43,56 @@ pub fn main() void {
     logError(error.FileNotFound);
     logError(error.InvalidInput);
     logError(error.OutOfMemory);
+
+    const inc = 1;
+    const newValue = addPlus(inc);
+    std.debug.print("Incremented {d} to {d}\n", .{ inc, newValue });
+
+    // Genericvari fonksiyon çağrısı
+    // anytype kullanan incrementGeneric fonksiyonu ile farklı türlerde değerler artırılmakta
+    // Burada int, float ve u8 gibi sayısal değerleri kullanabiliyoruz
+    const incInt = incrementAny(10);
+    std.debug.print("Incremented anytype int to {any}\n", .{incInt});
+    const incFloat = incrementAny(10.5);
+    std.debug.print("Incremented anytype float to {any}\n", .{incFloat});
+    const incU8 = incrementAny(@as(u8, 100));
+    std.debug.print("Incremented anytype u8 to {any}\n", .{incU8});
+
+    // // Dolayısıyla aşağıdaki kullanım çalışmaz.
+    // const isActive = true;
+    // const incBool = incrementAny(isActive);
+    // std.debug.print("Incremented anytype bool to {any}\n", .{incBool});
+
+    // Parametre olarak fonksiyon alan fonksiyonlar yazılabilir.
+    // Aşağıdaki örnekte executeOperation fonksiyonuna sum isimli fonksiyon parametre olarak geçiliyor.
+    const result = executeOperation(5, 3, sum);
+    std.debug.print("Result of executeOperation with sum: {d}\n", .{result});
+
+    // Bir fonksiyonu değişken olarak da atayabiliriz
+    const sumFn = sum;
+    const result2 = executeOperation(10, 15, sumFn);
+    std.debug.print("Result of executeOperation with sumFn: {d}\n", .{result2});
+}
+
+fn addPlus(value: i32) i32 {
+    return value + 1;
+}
+
+// Aşağıdaki fonksiyon kullanılmak istendiğinde bir hata alınacaktır:
+// error: cannot assign to constant
+// Çünkü Zig dilinde fonksiyon parametreleri varsayılan olarak 'const' (değiştirilemez) olarak kabul edilir.
+// Yani fonksiyonun içinde parametre değeri değiştirilemez.
+// Eğer parametre değerini fonksiyon içinde değiştirmek istiyorsak, yeni bir değişken tanımlamalıyız.
+fn increment(value: i32) i32 {
+    value = value + 1;
+    return value;
+    // Tabii bu basit fonksiyon aşağıdaki gibi de yazılabilir:
+    // return value + 1;
+}
+
+fn incrementAny(value: anytype) @TypeOf(value) {
+    // Burada value olarak sayısal bir tür kullandığımızı varsayalım
+    return value + 1;
 }
 
 // Fonksiyona parametre olarak u8 türünden bir dizi geçiliyor
@@ -55,7 +105,6 @@ pub fn main() void {
 // // 02_functions.zig:6:17: note: cast discards const qualifier
 // // 02_functions.zig:20:25: note: parameter type declared here
 // // fn print_smart(message: []u8) void {
-
 fn print_smart(message: []const u8) void {
     // title içeriği u8 türünden bir dilim (slice) olarak ifade ediliyor.
     for (message) |c| {
@@ -114,4 +163,9 @@ fn displayValue(value: anytype) void {
 // Bunu da herhangi bir hata türünü temsil etmek için kullanabiliriz
 fn logError(err: anyerror) void {
     std.debug.print("ERROR!: {any}\n", .{err});
+}
+
+// Bir fonksiyona parametre olarak fonksiyon geçebiliriz
+fn executeOperation(a: i32, b: i32, op: fn (i32, i32) i32) i32 {
+    return op(a, b);
 }

@@ -122,6 +122,9 @@ pub fn main() !void {
     } else {
         std.debug.print("Title not found\n", .{});
     }
+
+    // 11: Fonksiyon parametresi olarak callback fonksiyon kullanımı
+    try createProduct("LCD Tv 1080P", 1000.99, raiseEvent);
 }
 
 const location = struct {
@@ -149,4 +152,19 @@ test "add function works correctly" {
 // return anahtar kelimesi ile yapılır.
 fn add(a: i32, b: i32) i32 {
     return a + b;
+}
+
+fn raiseEvent(event: []const u8) void {
+    std.debug.print("Event: {s}\n", .{event});
+}
+
+fn createProduct(name: []const u8, price: f32, callbackFn: fn ([]const u8) void) !void {
+    if (price < 0.0) {
+        return error.InvalidPrice;
+    }
+    const created = try std.fmt.allocPrint(std.heap.page_allocator, "Product Created: {s}, Price: {d}", .{
+        name[0..10], // 10 değerini daha da artırıp deneyin :D Mesela gelen string'den daha uzun bir değer olsun ve çalışma zamanına bakın.
+        price,
+    });
+    callbackFn(created);
 }
