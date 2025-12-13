@@ -99,8 +99,36 @@ pub fn main() !void {
     // f16, f32, f64, f80, f128 türleri vardır
     const someFloat: f80 = 3.14159265358979323846264338327950288419716939937510;
     std.debug.print("Some Float (f80): {d}\n", .{someFloat});
+
+    // 09: block ifadeleri
+    // Bir block { ... } ifadesi bir değer döndürebilir. Bunun için block'a bir isim verilir
+    // ve break ifadesi ile block'tan çıkılırken bir değer döndürülebilir.
+    const value: i32 = sampleBlock: {
+        var sum: i32 = 0;
+        for (1..6) |i| {
+            sum += @as(i32, @intCast(i));
+            if (sum > 10) {
+                break :sampleBlock sum; // block'tan sum değeri ile çık
+            }
+        }
+        break :sampleBlock 0; // block'tan 0 değeri ile çık
+    };
+    std.debug.print("Block result value: {d}\n", .{value});
+
+    // 10: Conditional If Kullanımı
+    const isFound: ?bool = searchTitle("Zig Programming Language");
+    if (isFound) |result| {
+        std.debug.print("Title search result: {}\n", .{result});
+    } else {
+        std.debug.print("Title not found\n", .{});
+    }
 }
 
+// Semboil bir arama fonksiyonu.
+// Bunu conditional if örneğinde kullanmak için yazdık.
+fn searchTitle(title: []const u8) ?bool {
+    return if (std.mem.eql(u8, title, "Zig Programming Language")) true else null;
+}
 // 09 Birim testler kolay bir şekilde aşağıdaki gibi yazılabiliyor
 // Test sonucunu görmek için terminalden `zig test demos.zig` komutunu çalıştırmak yeterli.
 test "add function works correctly" {

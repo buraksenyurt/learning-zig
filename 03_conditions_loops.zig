@@ -29,6 +29,34 @@ pub fn main() !void {
     const canVote = if (age >= 18) true else false;
     std.debug.print("Can vote: {}\n", .{canVote});
 
+    // if karak yapılarında Conditional Binding de yapabiliriz
+    // Aşağıdaki örnek kod parçasında maybeValue değişkeni ? operatörü ile optional bir i32 türünde tanımlanmıştır
+    // Yani değişken ya bir i32 değeri tutar ya da null
+    const maybeValue: ?i32 = 42;
+    if (maybeValue) |value| { //value ile maybeValue değerine erişebiliriz
+        std.debug.print("The value is: {d}\n", .{value});
+    } else { // Burası maybeValue null ise çalışıyor
+        std.debug.print("No value present.\n", .{});
+    }
+    // Hatta * operatörü ile pointer üzerinden de conditional binding yapabiliriz.
+    var lastScore: ?i32 = 65;
+    const bonusPoint = 5;
+    if (lastScore) |*numberPointer| {
+        std.debug.print("Before: {d}\n", .{numberPointer.*});
+        numberPointer.* += bonusPoint;
+        std.debug.print("After: {d}\n", .{numberPointer.*});
+    }
+
+    // Zig'de error handling için kullanılan anyerror türü de conditional if ile ele alınabilir
+    // Ancak bu kullanımda mutlaka else bloğu olmalıdır.
+    var anyError: anyerror!u8 = error.FileNotFound;
+    _ = &anyError;
+    if (anyError) |err| {
+        std.debug.print("An error occurred: {}\n", .{err});
+    } else |err| {
+        std.debug.print("Error is '{}'\n", .{err});
+    }
+
     // if dışında switch yapısı da var. Hem statment hem de expression olarak kullanılabiliyor
     // Yukarıdaki not sistemi için bir switch ifades(expression) aşağıdaki gibi yazılabilir
     const grade: u8 = 85;
