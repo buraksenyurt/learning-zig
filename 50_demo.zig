@@ -116,18 +116,22 @@ pub fn main() !void {
     std.debug.print("Block result value: {d}\n", .{value});
 
     // 10: Conditional If Kullanımı
-    const isFound: ?bool = searchTitle("Zig Programming Language");
-    if (isFound) |result| {
-        std.debug.print("Title search result: {}\n", .{result});
+    const libLocation: ?location = searchTitle("Zig Programming Language");
+    if (libLocation) |l| {
+        std.debug.print("Title search result: Row{d}:Column{d}\n", .{ l.row, l.column });
     } else {
         std.debug.print("Title not found\n", .{});
     }
 }
 
+const location = struct {
+    row: f64,
+    column: f64,
+};
 // Semboil bir arama fonksiyonu.
 // Bunu conditional if örneğinde kullanmak için yazdık.
-fn searchTitle(title: []const u8) ?bool {
-    return if (std.mem.eql(u8, title, "Zig Programming Language")) true else null;
+fn searchTitle(title: []const u8) ?location {
+    return if (std.mem.eql(u8, title, "Zig Programming Language")) location{ .row = 10, .column = 12 } else null;
 }
 // 09 Birim testler kolay bir şekilde aşağıdaki gibi yazılabiliyor
 // Test sonucunu görmek için terminalden `zig test demos.zig` komutunu çalıştırmak yeterli.
