@@ -76,7 +76,37 @@ pub fn main() void {
 
     const someError = RequestError.NotFound;
     std.debug.print("Is someError a client error? {}\n", .{someError.isClientError()});
+
+    // Enum veri türlerinin elemanlarını dolaşmak istediğimizde Reflection taktiği kullanılabilir
+    // Söz gelimi Color enum değeri içindeki tüm alanları dolaşalım.
+    const colorType = @typeInfo(Color).@"enum"; // Öncelikle tür bilgisini alıyoruz
+    inline for (colorType.fields) |field| { // Şimdi tüm alanlara erişebilir durumdayız
+        const value = @field(Color, field.name); // Alan adına göre enum değerine erişiyoruz
+        std.debug.print("{s} with value {}\n", .{ field.name, value });
+    }
+
+    // veya aşağıdaki gibi std.meta modülndeki fields fonksiyonu da kullanılabilir
+    inline for (std.meta.fields(Color)) |field| {
+        std.debug.print("{s} with value {}\n", .{ field.name, field.value });
+    }
+    // Yukarıdaki iki döngüde inline for kullanılmıştır. Enum türünün metadata verisine eriştiğimiz için
+    // bunun derleme zamanında yapılması gerekiyor. inline for derleme zamanında çalışan bir döngü olduğundan tercih ediliyor.
+    // Zaten normal for kullanmak istersek comptime ile ilgili bir hata alırız:
+    //  error: values of type '[]const builtin.Type.EnumField' must be comptime-known, but index value is runtime-known
+    // for (std.meta.fields(Color)) |field| {
 }
+
+const Color = enum {
+    Violet,
+    Dark_green,
+    Beige,
+    Brown,
+    Orange,
+    Magenta,
+    Sky_blue,
+    Lime,
+    Yellow,
+};
 
 // Enum veri türünün çok güçlü olduğunu söylemiştim.
 // Fonksiyonlarda içerebilir. Örneğin;
