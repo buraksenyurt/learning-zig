@@ -20,7 +20,7 @@ pub fn main() !void {
     const myGuess = try rand.getFromRange(1, 10);
     var guess = try readUserInput();
 
-    for (1..3) |attempt| {
+    for (1..4) |attempt| {
         if (guess == myGuess) {
             std.debug.print("Congratulations! You guessed it right in {d} attempt(s).\n", .{attempt});
             return;
@@ -33,9 +33,9 @@ pub fn main() !void {
             const newGuess = try readUserInput();
             guess = newGuess;
         }
+    } else {
+        std.debug.print("You shall not pass! The correct number was {d}.\n", .{myGuess});
     }
-
-    std.debug.print("You shall not pass! The correct number was {d}.\n", .{myGuess});
 }
 
 fn readUserInput() !i32 {
