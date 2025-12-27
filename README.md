@@ -37,6 +37,8 @@ zig test tests.zig
 - Genelde C dilinin modern bir alternatifi olarak tanımlanıyor. C türevli söz dizimine de sahip.
 - **Strongly Typed** sistemini kullanan derlemeli bir dil.
 - Herhangi bir **Garbage Collector** mekanizması içermiyor.
+- Zig ile oluşturlan projeleri derlemek için ayrı bir tool set'e ihtiyaç yok zira derleyici dil sistemi içerisinde inşa edilmiş. Söz gelimi C,C++ gibi dillerde **gcc, clang** gibi derleyicilere ihtiyaç duyulurken Zig'de buna gerek yok. Bu nedenle **zig init** ile başlatılan projelerde zig ile yazılmış ve build, run, test gibi işlemleri yapan bir **build.zig** dosyası bulunuyor.
+- Resmi dokümantasyona göre biraz da kafa karıştırıcı olabilen makrolar yok.
 - **Generic** tip sistemini de destekliyor.
 - **Meta programlama** kabiliyetleri var.
 - **Rust** dili ile de büyük benzerlikler var ve hatta daha güzel bir syntax ile benzer işleri yaptığı iddia ediliyor. Söz gelimi fonksiyon dönüşlerini belirtirken **Rust** dilinde kullanılan **->** burada yok. *(Rust ile çalışmış kişilerin de kolayca adapte olabileceğini düşünüyorum)*

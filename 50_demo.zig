@@ -125,6 +125,9 @@ pub fn main() !void {
 
     // 11: Fonksiyon parametresi olarak callback fonksiyon kullanımı
     try createProduct("LCD Tv 1080P", 1000.99, raiseEvent);
+
+    // 12: Bir klasördeki dosya adlarını listeleme
+    try printFiles(".");
 }
 
 const location = struct {
@@ -167,4 +170,40 @@ fn createProduct(name: []const u8, price: f32, callbackFn: fn ([]const u8) void)
         price,
     });
     callbackFn(created);
+}
+
+// Bir klasördeki dosya adlarını listeleyen fonksiyon
+fn printFiles(path: []const u8) !void {
+    // Henüz tam olarak kavrayamadığım bir konu var: allocator kullanımı.
+    // Teorik olarak işletim sistemi seviyesinde yer tahsisi ve mapping yapıyoruz.
+    // ve hatta bunun için doğrudan syscall çağrıları yapıldığı ifade ediliyor.
+    // Türün thread-safe olduğu da belirtilmekte.
+    const allocator = std.heap.page_allocator;
+
+    // path ile gelen klasör ileri yönlü iterasyon yapılabilecek şekilde açılır.
+    // Özellikle iterasyon yapılacağını belirtmek için iterate alanına true değeri veriliyor.
+    var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+    defer dir.close();
+
+    // Dosya adlarını tutmak için dinamik büyüyebilecek bir dizi oluşturuyoruz.
+    var files = std.ArrayList([]const u8).init(allocator);
+    defer files.deinit();
+    // ArrayList içene alınan string içeriklerin de defer edilmesi gerekiyor
+    defer for (files.items) |file_name| {
+        allocator.free(file_name);
+    };
+
+    // Klasör içeriğini oluşturduğumuz iterator ile dolaşmaya başlıyoruz.
+    var iterator = dir.iterate();
+    while (try iterator.next()) |entry| {
+        // entry.name geçici bir buffer olabilir, bu yüzden dupe fonksiyonu ile kopyalanıyor
+        const name_copy = try allocator.dupe(u8, entry.name);
+        errdefer allocator.free(name_copy);
+        try files.append(name_copy);
+    }
+
+    // Dosya adların ekrana yazdırılıyor
+    for (files.items) |file_name| {
+        std.debug.print("File: {s}\n", .{file_name});
+    }
 }

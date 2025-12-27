@@ -31,6 +31,23 @@ pub fn main() void {
     logSensorData(tempSensor);
     tempSensor = SensorFactory{ .Acceleration = Acceleration{ .x = 0.0, .y = 9.81, .z = 0.0 } };
     logSensorData(tempSensor);
+
+    // NullableInt union türünü deneyelim
+    var theValue: NullableInt = NullableInt{ .Some = 42 };
+    if (theValue.isSome()) {
+        const value = theValue.unwrap();
+        std.debug.print("NullableInt has value: {d}\n", .{value});
+    } else {
+        std.debug.print("NullableInt is None\n", .{});
+    }
+
+    theValue = NullableInt{ .None = {} };
+    if (theValue.isSome()) {
+        const value = theValue.unwrap();
+        std.debug.print("NullableInt has value: {d}\n", .{value});
+    } else {
+        std.debug.print("NullableInt is None\n", .{});
+    }
 }
 
 // Sensör türlerini aşağıdaki gibi bir enum türü olarak tanımlayabiliriz
@@ -39,6 +56,7 @@ const SensorType = enum { Temperature, Humidity, Acceleration };
 // İvme için x,y,z değerlerini tutan bir struct
 const Acceleration = struct { x: f32, y: f32, z: f32 };
 
+// Tagged Uninon;
 // Burada union ile SensorType enum değerlerini tek çatı altında birleştirdik.
 // union'a bir tag eklediğimizi söyleyebiliriz. SensorType dışında bir seçenek ekleyemeyiz.
 // Burada sıralama önemli. Eğer enum içerisindeki sıralamayı değiştirir ama aşağıdaki union tanımında aynı sıralamayı korumazsak
@@ -78,3 +96,26 @@ fn logSensorData(sensor: SensorFactory) void {
         },
     }
 }
+
+// Union türleri de normal struct ve enum türleri gibi değişkenler ve fonksiyonlar içerebilirler.
+// Örnek olarak nullable bir integer türünü union olarak tanımlayabiliriz
+// Sadece tek bir değeri kullanılabileceğinden bu oldukça mantıklı ;)
+// Buna bazı yardımcı fonksiyonlar da ekleyebiliriz. Rust'a benzettik gibi :D
+const NullableInt = union(enum) {
+    Some: i32,
+    None: void,
+
+    pub fn isSome(self: NullableInt) bool {
+        return switch (self) {
+            .Some => true,
+            .None => false,
+        };
+    }
+
+    pub fn unwrap(self: NullableInt) i32 {
+        return switch (self) {
+            .Some => |value| value,
+            .None => @panic("Called unwrap on a None value"),
+        };
+    }
+};
