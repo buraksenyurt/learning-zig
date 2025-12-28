@@ -89,6 +89,7 @@ pub fn main() void {
     print("{c},{c},{c}\n", .{ letterA, letterB, letterC });
 
     // String ifadeler için ise u8 türünden diziler kullanılır
+    // Bir başka deyişle string ifadelere birer byte array' dir.
     const motto: []const u8 = "I am learning Zig, programming language.";
     print("{s}\n", .{motto});
     // birden fazla string içeriği birleştirmek için(concatenation) ++ operatörü kullanılır
@@ -96,8 +97,7 @@ pub fn main() void {
     print("{s}\n", .{fullMotto});
     print("Type of a string is {}\n", .{@TypeOf(fullMotto)});
 
-    // string ifadeler u8 türünden diziler ile temsil edilirler
-    // var ile tanımlansalar bile değiştirilemezler (immutable)
+    // string ifadeler var ile tanımlansalar bile değiştirilemezler (immutable)
     // Aşağıdaki kullanım derleme hatası verir: error: cannot assign to constant
     // var greeting: []const u8 = "Hello, World!";
     // greeting[0] = 'B'; // Hata verir

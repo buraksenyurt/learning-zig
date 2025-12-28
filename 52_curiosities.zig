@@ -10,7 +10,7 @@ const std = @import("std");
 pub fn main() !void {
     // Windows OS tarafında bunu aşmak için stdout değişkenini main fonksiyonu
     // içerisine alınır. Bu durumda bir sorun olmaz zira Zig dilinde fonksiyon içerisindeki
-    // ifadeler(expressions) runtime'da  değerlendirilir.
+    // ifadeler(expressions) runtime'da  değerlendirilir. Taa ki comptime olarak işaretlenmedikçe.
     const stdout = std.io.getStdOut().writer();
     _ = try stdout.print(
         "Curiosities in Zig Language: \n\tAll global variables must be initialized at compile time.\n",
