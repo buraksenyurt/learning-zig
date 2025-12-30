@@ -91,4 +91,120 @@ pub fn main() !void {
             char,
         });
     }
+
+    // std library'de yer alan ve string operasyonlar için kullanabileceğimiz birkaç fonksiyon örneği
+    // Metinsel ifadeleri karşılaştırma
+    const title = "Programming in Zig";
+    std.debug.print(
+        "\nAre the strings equal? {any}\n",
+        .{std.mem.eql(u8, title, "Programming in Zig")},
+    );
+
+    // splitScalar ile bir delimeter karakterine göre string parçalayabiliriz.
+    // Örneğin bir CSV içeriğinden gelen satırı virgül karakterine göre ayırmak istediğimizi düşünelim.
+    // splitScalar bir iterator döndürür ve bunu bir while döngüsünde kullanabiliriz.
+    const csvLine = "Jan,Cey,Rambo,30,Special Forces";
+    var parts = std.mem.splitScalar(
+        u8,
+        csvLine,
+        ',',
+    );
+    while (parts.next()) |part| { // Döngü koşulu olarak bir sonraki parça var mı diye kontrol ediyoruz
+        std.debug.print("{s}\n", .{part});
+    }
+
+    // splitSequence ile birden fazla karakterden oluşan delimiter'lar da kullanılabilir.
+    // Aslında burada delimeter bir subString olarak düşünülebilir.
+    // Aşağıdaki örnekte çift noktalı virgül (;; ) karakterine göre string parçalama işlemi yapılıyor.
+    const text = "apple;;banana;;orange;;grape";
+    var multiParts = std.mem.splitSequence(u8, text, ";;");
+    while (multiParts.next()) |part| { // Burada da takip eden bir parça var mı kontrolü yapılıyor
+        std.debug.print("{s}\n", .{part});
+    }
+
+    // startsWith ve endsWith fonksiyonları da oldukça kullanışlıdır.
+    const filename = "SalaryReport.rdl";
+    std.debug.print("\nDoes the filename start with 'Salary'? {any}\n", .{
+        std.mem.startsWith(u8, filename, "Salary"),
+    });
+    std.debug.print("Does the filename end with '.rdl'? {any}\n", .{
+        std.mem.endsWith(u8, filename, ".rdl"),
+    });
+
+    // String'leri birleştirmek için concat(concatenate) fonksiyonundan yararlanabiliriz.
+    // Ancak bu işlem sanıldığı kadar kolay olmayabilir.
+    // Zira fonksiyon ilk parametre ile bir allocator alır.
+    // Aşağıdaki örnekte genel amaçlı bir allocator oluşturuluyor ve bunun allocator özelliği kullanılıyor.
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit(); // scope sonunda allocator kaynaklarının serbest bırakılmasını belirttik
+    const allocator = gpa.allocator();
+
+    const firstName = "Jan";
+    const middleName = "Claude";
+    const lastLastName = "Van";
+    const lastLastLastName = "Damme";
+    const nameParts = &[_][]const u8{
+        firstName,
+        middleName,
+        lastLastName,
+        lastLastLastName,
+    };
+    // İlk parametre allocator, ikinci parametre ise string türü, üçüncü parametre ise birleştirilecek string dizisi.
+    const fullName2 = try std.mem.concat(allocator, u8, nameParts);
+    defer allocator.free(fullName2);
+
+    std.debug.print("\nFull name is: {s} :D\n", .{fullName2});
+
+    // Tabii daha basit birleştirme için ++ operatörünü de kullanabiliriz de :D
+    const statetment = firstName ++ " " ++ middleName ++ " " ++ lastLastName ++ " " ++ lastLastLastName;
+    std.debug.print("Full name using ++ operator is: {s} :D\n", .{statetment});
+
+    // Bir diğer kullanışlı olabilecek fonksiyon da replace'dir.
+    // Birkaç satırdan oluşan bir metinsel içerikte karakter değiştirme işlemi yapalım.
+    const content =
+        \\ <html>
+        \\    <head>
+        \\       <title>Sample Page -&gt; Zig Lang</title>
+        \\   </head>
+        \\   <body>
+        \\      <h1>Hell0 -&gt; W0rld!</h1>
+        \\  </body>
+        \\ </html>
+    ;
+    // replace fonksiyonu orijinal içeriği değiştirmez. Sonuç yeni bir buffer içine yazılır.
+    // Bu nedenle yeterli büyüklükte bir buffer tanımlıyoruz.
+    var buffer: [content.len]u8 = undefined;
+    const repCount = std.mem.replace(
+        u8,
+        content,
+        "0",
+        "o",
+        buffer[0..],
+    );
+    std.debug.print("\nReplaced content:\n{s}\nReplaced: {d}", .{
+        buffer,
+        repCount,
+    });
+    // Şimdi buffer içeriğinden yeni bir string literal oluşturalım.
+    const finalContent = buffer[0..];
+    // ve şimdi de bu içerikteki &gt; karakterlerini > karakteri ile değiştirelim.
+    var finalBuffer: [buffer.len]u8 = undefined;
+    const finalRepCount = std.mem.replace(
+        u8,
+        finalContent,
+        "&gt;",
+        ">",
+        finalBuffer[0..],
+    );
+
+    std.debug.print("\nFinal replaced content:\n{s}\nReplaced: {d}", .{
+        finalBuffer,
+        finalRepCount,
+    });
+    // Tabii yukarıdaki son kullanımda gizemli bir durum var.
+    // 4 karakterlik bir ifadeyi 1 karakterlik bir ifade ile değiştirdik ama yeni buffer
+    // uzunluğu orijinal buffer uzunluğuna eşit tanımlandı.
+    // Bu durumda finalBuffer'da fazladan boşluk kalacaktır.
+    // Bunu önlemek için dinamik bir buffer kullanılabilir ama bunu ileride,
+    // allocator konusunu daha iyi öğrendiğimde ele alacağım.
 }
