@@ -39,6 +39,11 @@ zig test tests.zig
 - Herhangi bir **Garbage Collector** mekanizması içermiyor.
 - Zig ile oluşturlan projeleri derlemek için ayrı bir tool set'e ihtiyaç yok zira derleyici dil sistemi içerisinde inşa edilmiş. Söz gelimi C,C++ gibi dillerde **gcc, clang** gibi derleyicilere ihtiyaç duyulurken Zig'de buna gerek yok. Bu nedenle **zig init** ile başlatılan projelerde zig ile yazılmış ve build, run, test gibi işlemleri yapan bir **build.zig** dosyası bulunuyor.
 - Resmi dokümantasyona göre biraz da kafa karıştırıcı olabilen makrolar yok.
+- Rust dilindeki gibi bellek güvenliği *(memory safety)* için katı kurallar barındırmıyor. Bunun yerine programcıya çeşitli araçlar sunuyor. Örneğin;
+  - **use after free**, **double free** gibi bellek hatalarını önlemek için **defer** ifadesi var ve gatta hata hallerinde, bellekte ayrılmış bölgelerin serbest bırakılması için **errdefer** ifadesi bulunuyor.
+  - **pointer**'lar ve nesneler varsayılan olarak non-nullable.
+  - Dil **native type allocator** türleri sunuyor. Örneğin **testing allocators**'lar var. Bu tür allocator'lar kullanarak bellek kaçaklarını ve double-frees gibi hataları birim testleri ile yakalamak mümkün. Bir başak deyişle, birim testleri bellek hatalarını tespit edebileceğimiz bir araç olarak kullanabiliriz.
+- Zig derleyicisi programdaki olası her hatayı ele almamızı bekliyor, aksi durumda derleme hatası veriyor.
 - **Generic** tip sistemini de destekliyor.
 - **Meta programlama** kabiliyetleri var.
 - **Rust** dili ile de büyük benzerlikler var ve hatta daha güzel bir syntax ile benzer işleri yaptığı iddia ediliyor. Söz gelimi fonksiyon dönüşlerini belirtirken **Rust** dilinde kullanılan **->** burada yok. *(Rust ile çalışmış kişilerin de kolayca adapte olabileceğini düşünüyorum)*
