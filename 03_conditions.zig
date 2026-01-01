@@ -71,15 +71,17 @@ pub fn main() !void {
         } else "Not ideal for working.";
     std.debug.print("The room condition is: '{s}'\n", .{comfort});
 
-    // if dışında switch yapısı da var. Hem statment hem de expression olarak kullanılabiliyor
-    // Yukarıdaki not sistemi için bir switch ifades(expression) aşağıdaki gibi yazılabilir
+    // SWITCH KULLANIM ÖRNEKLERİ:
+
+    // if dışında switch yapısı da var. Hem statment hem de expression olarak kullanılabiliyor.
+    // Yukarıdaki not sistemi için bir switch ifadesi(expression) aşağıdaki gibi yazılabilir.
     const grade: u8 = 85;
     const gradeLetter = switch (grade) {
         0...49 => 'F', // Rust'ta .. ile gösterilen aralık Zig'de ... ile gösteriliyor anladığım kadarıyla
         50...69 => 'C',
         70...89 => 'B',
         90...100 => 'A',
-        else => '?',
+        else => '?', // Eğer hiçbir koşul sağlanmazsa '?' dönecek
     };
     std.debug.print("Your grade letter is: {c}\n", .{gradeLetter});
 
@@ -101,4 +103,97 @@ pub fn main() !void {
         11...30 => std.debug.print("Very late!\n", .{}),
         else => std.debug.print("Extremely late!\n", .{}),
     }
+
+    // // switch bloklarında her durum ele alınmalıdır. Aksi halde derleme hatası alınır.
+    // // Aşağıdaki kod parçası derleme hatası verecektir.
+    // // error: switch must handle all possibilities
+    // // unhandled enumeration value: 'Guest'
+    // const Role = enum {
+    //     Admin,
+    //     User,
+    //     Guest,
+    //     Bot,
+    // };
+    // const userRole = Role.User;
+    // switch (userRole) {
+    //     .Admin => std.debug.print("Admin role!\n", .{}),
+    //     .User, .Bot => std.debug.print("User or Bot role!\n", .{}),
+    //     // .Guest durumu ele alınmadığı için derleme hatası alınır
+    // }
+
+    // switch ifadelerinde labeling de kullanılabilir.
+    // Aşağıdaki örnek çok anlamlı değil, sadece syntax'ı göstermek için yazdım.
+    // Hangi senaryolarda işe yarar düşünelim.
+    const temperature: u8 = 15;
+    level: switch (temperature) {
+        0...18 => {
+            std.debug.print("It's cold!\n", .{});
+            continue :level 19; // Burada tekrar level isimli yazan yere dönüyor ve switch ifades 19 sayısı için yeniden değerlendiriliyor
+        },
+        19...25 => {
+            std.debug.print("It's comfortable.\n", .{});
+            continue :level 26; // Bu sefer 26 sayısı için yeniden değerlendirilecek şekilde level isimli yere dönüyoruz
+        },
+        26...40 => {
+            std.debug.print("It's hot!\n", .{});
+            continue :level 41;
+        },
+        else => {
+            std.debug.print("Extreme temperature!\n", .{});
+        },
+    }
+    // Bu kullanımlda dikkatli olmak lazım zira sonsuz döngüye girebiliriz.
+
+    // Swtich branch değeleri hesaplamalı olabilir veya bir değişkenden gelebilir
+    const randomNumber = try rand.getFromRange(1, 100);
+    std.debug.print("Random number is: {d}\n", .{randomNumber});
+    const sixtySeven = 67;
+    switch (randomNumber) {
+        0 => std.debug.print("Zero\n", .{}),
+        1 => std.debug.print("One\n", .{}),
+        2...50 => std.debug.print("Between 2 and 50\n", .{}),
+        50 + 1 => std.debug.print("Above 50\n", .{}), // Branch değeri buradaki gibi hesaplamalı olabilir(tür uyumlu olmalı)
+        sixtySeven => std.debug.print("It's sixty seven!\n", .{}), // veya değeri bilinen bir değişken de olabilir
+        68...100 => std.debug.print("Between 68 and 100\n", .{}),
+        else => std.debug.print("Out of scope\n", .{}),
+    }
+
+    // Sonraki bölümlerde union ve tagged union örnekleri var.
+    // Bunları da switch bloklarında kullanabiliriz.
+    // Aşağıdaki örnekte bir takım değişken türlerini enum gibi ele alan bir union tanımı söz konusu.
+    // union kısmında ele alıyoruz ama burada da belirtelim. Bir union nesne sadece tek bir türde değeri tutabilir.
+    const ValueObject = union(enum) {
+        Int32: i32,
+        Float32: f32,
+        Text: []const u8,
+    };
+    const integer: ValueObject = .{ .Int32 = 51 };
+    switch (integer) {
+        .Int32 => |intVal| {
+            std.debug.print("Integer value: {d}\n", .{intVal});
+        },
+        .Float32 => |floatVal| {
+            std.debug.print("Float value: {f}\n", .{floatVal});
+        },
+        .Text => |textVal| {
+            std.debug.print("Text value: {s}\n", .{textVal});
+        },
+    }
+
+    // Yukarıdaki örnekte integer isimli değişken const türündendir.
+    // var ile tanımlarsak bu, üzerinde değişiklik yapmak istediğimiz anlamına gelir.
+    // Bu durumda ilgili branch'te pointer ile değere erişebilir ve dereference yaparak da değiştirebiliriz.
+    var piValue: ValueObject = .{ .Float32 = 3.14 };
+    switch (piValue) {
+        .Int32 => |intVal| {
+            std.debug.print("Integer value: {d}\n", .{intVal});
+        },
+        .Float32 => |*floatVal| {
+            floatVal.* += 0.00159; // Pointer üzerinden değere erişip değiştirebiliyoruz
+        },
+        .Text => |textVal| {
+            std.debug.print("Text value: {s}\n", .{textVal});
+        },
+    }
+    std.debug.print("Updated pi value: {d}\n", .{piValue.Float32});
 }
