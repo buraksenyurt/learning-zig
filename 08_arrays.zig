@@ -43,4 +43,110 @@ pub fn main() void {
     }
 
     utility.println();
+
+    // u8 türünden bir array'i print ederken {s} format specifier'ını kullanabiliriz
+    // Bu durumda array'deki sayısal değerlerin karşılığı olan ASCII karakterler yazılır.
+    const helloArray: [13]u8 = [_]u8{ 72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33 };
+    std.debug.print("{s}", .{helloArray});
+
+    utility.println();
+
+    // Pek tabii dizi elemanlarına index operatörü ile de erişebiliriz
+    for (0..numbers.len) |i| {
+        std.debug.print("numbers[{d}] = {d}\n", .{ i, numbers[i] });
+    }
+
+    // Array'leri birleştirmek için ++ operatörünü kullanabiliriz
+    const array1 = [_]i32{ 1, 2, 3 };
+    const array2 = [_]i32{ 4, 5, 6 };
+    const combined = array1 ++ array2; // combined türü [6]i32
+    std.debug.print("Combined array: {any}\n", .{combined});
+
+    // Array'leri ** operatörü ile çoklayabiliriz.
+    // Bunu varsayılan değer içeren bir diziyi oluşturmak için kullanabiliriz.
+    const startPoints = [_]u8{1} ** 10; // 10 elemanlı ve tüm elemanları 1 olan bir dizi oluşturuyoruz
+    std.debug.print("Start points array: {any}\n", .{startPoints});
+
+    // Birden fazla boyuttan oluşan (multi-dimensional) diziler de tanımlanabilir
+    // Örneğin 6*4 boyutlarında bir matrisi aşağıdaki gibi oluşturabiliriz.
+    // Bir oyun sahasınının iki boyutlu tasarımında bu tip çok boyutlu diziler epeyce işe yarıyor.
+    const matrix: [6][4]u8 = [_][4]u8{
+        [_]u8{ 1, 1, 0, 0 },
+        [_]u8{ 1, 0, 0, 1 },
+        [_]u8{ 1, 0, 1, 1 },
+        [_]u8{ 1, 0, 2, 1 },
+        [_]u8{ 1, 1, 2, 0 },
+        [_]u8{ 1, 1, 2, 2 },
+    };
+    // ve içiçe bir döngü yardımıyla tüm elemanlarını dolaşabiliriz.
+    for (matrix) |row| {
+        for (row) |value| {
+            std.debug.print("{d}\t", .{value});
+        }
+        utility.println();
+    }
+    // Tabii belli bir elemanına ulaşmak için yine index operatörünü kullanabiliriz
+    const element = matrix[3][2]; // 3. satır ve 2. sütundaki eleman
+    std.debug.print("Element at matrix[3][2] = {d}\n", .{element});
+
+    // Dizilerin alt kümesini oluşturmak aslında slice işlemi olarak da bilinir.
+    // Yeni bir dizi tanımlayıp deneyelim.
+    const somePoints = [_]i32{ 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21 };
+    std.debug.print("Some points array: {any}\n", .{somePoints});
+    const subPoints = somePoints[2..5]; // 2. indexten başlayıp 5. indexe kadar olan alt küme
+    std.debug.print("Sub points array: {any}\n", .{subPoints});
+    const subPoints2 = somePoints[somePoints.len / 2 ..]; // Diziyi orta noktasından sonuna kadar almaya çalıştık
+    std.debug.print("Sub points 2 array: {any}\n", .{subPoints2});
+
+    // filterU8 fonksiyonunu deneyelim.
+    const mixedNumbers = [_]u8{ 10, 15, 22, 33, 42, 55, 60, 71, 80, 91 };
+    std.debug.print("Mixed numbers array: {any}\n", .{mixedNumbers});
+    var evenBuffer: [mixedNumbers.len]u8 = undefined; // Filtrelenmiş sonuçları tutacak buffer
+    const evenNumbers = filterU8(&mixedNumbers, isEven, &evenBuffer);
+    std.debug.print("Even numbers array: {any}\n", .{evenNumbers});
+
+    // // filterU8Error fonksiyonunu filterU8'in farklı bir versiyonu
+    // // Ancak bu versiyon hiçde beklediğimiz şekilde çalışmayacaktır.
+    // // Zira filterU8Error içinde geçici bir buffer tanımlanıp geriye bir slice olarak döndürülüyor.
+    // // Bu buffer fonksiyonun kapsamı dışında kalacağı için aslında geçersiz bir slice döndürülmüş olacak.
+    // // Buna göre her seferinde içinde farklı sayılar barındıran bir içerik elde edeceğiz ki sanırım bu
+    // // dangling reference olma hali olarak düşünülebilir.
+    // // Bu nedenle doğru kullanım olarak filterU8 fonksiyonunu tercih etmek lazım.
+    // // filterU8 içerisine dışarıdan bir buffer alınıyor ve bu buffer üzerinde işlem yapılıyor.
+    // // Dolayısıyla main fonksiyonunda tanımlanmış bir buffer kullanıldığı için geçerli bir slice elde ediliyor.
+    // const evenNumbers2 = filterU8Error(&mixedNumbers, isEven);
+    // std.debug.print("Even numbers 2 array: {any}\n", .{evenNumbers2});
+}
+
+fn isEven(n: u8) bool {
+    return (n % 2) == 0;
+}
+
+// Şimdi u8 elemanlardan oluşan bir dizide belli bir kritere uyanları
+// yeni bir dizide toplayıp geriye döndüren bir fonksiyon yazalım.
+// Tam anlamıyla bir hihger-order function olmasa da idare eder.
+fn filterU8(arr: []const u8, predicate: fn (u8) bool, buffer: []u8) []const u8 {
+    var index: u8 = 0;
+    for (arr) |value| {
+        if (predicate(value)) {
+            if (index >= buffer.len) break; // Dizide overflow olmasın diye eklediğimiz kontrol
+            buffer[index] = value;
+            index += 1;
+        }
+    }
+    return buffer[0..index];
+}
+
+// Bu oldukça tehlikeli bir fonksiyon. Çalışma zamanı çıktılarına bakarak değerlendirmek lazım.
+fn filterU8Error(arr: []const u8, predicate: fn (u8) bool) []const u8 {
+    var index: u8 = 0;
+    var temp: [256]u8 = undefined;
+    for (arr) |value| {
+        if (predicate(value)) {
+            if (index >= temp.len) break; // Dizide overflow olmasın diye eklediğimiz kontrol
+            temp[index] = value;
+            index += 1;
+        }
+    }
+    return temp[0..index];
 }
