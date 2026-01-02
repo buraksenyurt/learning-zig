@@ -89,6 +89,27 @@ pub fn main() void {
     const element = matrix[3][2]; // 3. satır ve 2. sütundaki eleman
     std.debug.print("Element at matrix[3][2] = {d}\n", .{element});
 
+    // Bir dizideki elemanların bellek adreslerini almak için & operatörünü kullanabiliriz
+    const nums = [_]u16{ 100, 200, 300, 400, 500 };
+    std.debug.print("Nums :\n", .{});
+    for (&nums) |*value| {
+        // & ile nums dizisinin referans adresine ulaştık
+        // *value ile de işaret edilen adresteki gerçek değere erişiyoruz
+        // value.* ile de pointer'ın gösterdiği değeri alıyoruz
+        std.debug.print("{} -> {}\n", .{ value, value.* });
+    }
+
+    // Eleman sayıları eşit olan dizileri aynı for döngüsü ile dolaşabiliriz.
+    // Bu senaryoda n sayıda farklı türde dizi bir arada ele alınabilir.
+    // Aşağıdaki örnekte üç farklı türde dizi tanımlanıyor ve bunlar aynı for döngüsünde dolaşılıyor.
+    const arrayA = [_]u8{ 1, 2, 3, 4, 5 };
+    const arrayB = [_]f32{ 10.0, 20.5, 30.99, 40.01, 50.075 };
+    const arrayC = [_]i32{ 100, 200, 300, 400, 500 };
+    std.debug.print("Array A and B elements:\n", .{});
+    for (arrayA, arrayB, arrayC, 0..) |a, b, c, idx| {
+        std.debug.print("A[{d}] = {d}\tB[{d}] = {d}\tC[{d}] = {d}\n", .{ idx, a, idx, b, idx, c });
+    }
+
     // Dizilerin alt kümesini oluşturmak aslında slice işlemi olarak da bilinir.
     // Yeni bir dizi tanımlayıp deneyelim.
     const somePoints = [_]i32{ 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21 };
@@ -116,15 +137,21 @@ pub fn main() void {
     // // Dolayısıyla main fonksiyonunda tanımlanmış bir buffer kullanıldığı için geçerli bir slice elde ediliyor.
     // const evenNumbers2 = filterU8Error(&mixedNumbers, isEven);
     // std.debug.print("Even numbers 2 array: {any}\n", .{evenNumbers2});
+
+    // reverseU8Array fonksiyonunun örnek kullanımı
+    const anArray = [_]u8{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    std.debug.print("An array: {any}\n", .{anArray});
+    var reverseBuffer: [anArray.len]u8 = undefined; // Ters çevrilmiş sonucu tutacak dizi
+    const reversedArray = reverseU8Array(&anArray, &reverseBuffer);
+    std.debug.print("Reversed array: {any}\n", .{reversedArray});
 }
 
 fn isEven(n: u8) bool {
     return (n % 2) == 0;
 }
 
-// Şimdi u8 elemanlardan oluşan bir dizide belli bir kritere uyanları
-// yeni bir dizide toplayıp geriye döndüren bir fonksiyon yazalım.
-// Tam anlamıyla bir hihger-order function olmasa da idare eder.
+// u8 türünden bir diziyi verilen predicate fonksiyonuna göre filtreleyen fonksiyon örneği.
+// Gerçek anlamda bir HOF (Higher-Order Function) örneği sayılmayabilir tabii ama benzer konseptte ele alabiliriz.
 fn filterU8(arr: []const u8, predicate: fn (u8) bool, buffer: []u8) []const u8 {
     var index: u8 = 0;
     for (arr) |value| {
@@ -137,16 +164,28 @@ fn filterU8(arr: []const u8, predicate: fn (u8) bool, buffer: []u8) []const u8 {
     return buffer[0..index];
 }
 
-// Bu oldukça tehlikeli bir fonksiyon. Çalışma zamanı çıktılarına bakarak değerlendirmek lazım.
-fn filterU8Error(arr: []const u8, predicate: fn (u8) bool) []const u8 {
-    var index: u8 = 0;
-    var temp: [256]u8 = undefined;
-    for (arr) |value| {
-        if (predicate(value)) {
-            if (index >= temp.len) break; // Dizide overflow olmasın diye eklediğimiz kontrol
-            temp[index] = value;
-            index += 1;
-        }
+// Dizi elemanlarını ters sıralayan ve geriye yeni bir dizi olarak döndüren bir fonksiyon
+fn reverseU8Array(arr: []const u8, buffer: []u8) []const u8 {
+    const len = arr.len;
+    if (buffer.len < len) {
+        return &[_]u8{};
     }
-    return temp[0..index];
+    for (0..len) |i| {
+        buffer[i] = arr[len - 1 - i];
+    }
+    return buffer[0..len];
 }
+
+// // Bu oldukça tehlikeli bir fonksiyon. Çalışma zamanı çıktılarına bakarak değerlendirmek lazım.
+// fn filterU8Error(arr: []const u8, predicate: fn (u8) bool) []const u8 {
+//     var index: u8 = 0;
+//     var temp: [256]u8 = undefined;
+//     for (arr) |value| {
+//         if (predicate(value)) {
+//             if (index >= temp.len) break; // Dizide overflow olmasın diye eklediğimiz kontrol
+//             temp[index] = value;
+//             index += 1;
+//         }
+//     }
+//     return temp[0..index];
+// }
