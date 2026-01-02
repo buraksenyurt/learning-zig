@@ -72,4 +72,43 @@ pub fn main() void {
     const b: @Vector(4, i32) = .{ 5, 6, 7, 8 };
     const sumOfVectors: @Vector(4, i32) = a + b;
     std.debug.print("Sum of vectors: {}\n", .{sumOfVectors});
+
+    // Vector türünde kullanılabilecek faydalı enstrümanlardan birisi de reduce fonksiyonudur.
+    const ReduceOp = @import("std").builtin.ReduceOp;
+    // Örneğin bir vektör içindeki maksimum veya minimum değeri bulmak için reduce kullanılabilir
+    const vecForReduce: @Vector(4, i32) = .{ 10, 3, 25, 7 };
+    const maxValue: i32 = @reduce(ReduceOp.Max, vecForReduce);
+    std.debug.print("Maximum value in vector: {}\n", .{maxValue});
+    const minValue: i32 = @reduce(ReduceOp.Min, vecForReduce);
+    std.debug.print("Minimum value in vector: {}\n", .{minValue});
+    // ReduceOp bir enum türüdür ve farklı işlemler için kullanılabilir.
+
+    // Söz gelimi yukarıdaki vektördeki sayısal değerlerini toplamını Add işlemi ile bulabiliriz
+    const totalSum: i32 = @reduce(ReduceOp.Add, vecForReduce);
+    std.debug.print("Total sum of vector elements: {}\n", .{totalSum});
+
+    // ReduceOp.Mul örneği. Vektörün tüm elemanlarını birbiri ile çarpar
+    // Olayı kolayca anlamak için basit bir vektör tanımlayıp kullanalım.
+    const candidate = @Vector(4, i32){ 1, 1, 1, 2 };
+    const multiplyOfProducts: i32 = @reduce(ReduceOp.Mul, candidate);
+    std.debug.print("Multiply of vector elements: {}\n", .{multiplyOfProducts});
+
+    // Vektörler ile ilgili enteresan bir nokta da uzunluk bilgisi için doğrudan bir fonksiyonun olmaması.
+    // Uzunluk bilgisini amak için tür bilgisine inmek gerekebilir.
+    const vecType = @TypeOf(vecForReduce);
+    const vectTypeInfo = @typeInfo(vecType);
+    std.debug.print("Vector type info: {}\n", .{vectTypeInfo});
+    std.debug.print("Vector length is: {}\n", .{vectTypeInfo.vector.len});
+
+    // // Peki bir vektör içindeki tüm elemanları dolaşmak istersek.
+    // // Standart bir for döngüsü deneyelim.
+    // // Aşağıdaki kullanım derleme zamaında şu hatayı verir: error: type '@Vector(4, i32)' does not support field access
+    // for (vecForReduce) |value| {
+    //     std.debug.print("{}\n", .{value});
+    // }
+
+    // O halde index operatörü ile dönelim
+    for (0..vectTypeInfo.vector.len) |i| {
+        std.debug.print("{d}:{d}\n", .{ i, vecForReduce[i] });
+    }
 }
