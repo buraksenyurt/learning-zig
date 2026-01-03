@@ -11,6 +11,14 @@ pub fn main() !void {
     }
     std.debug.print("\n", .{});
 
+    // while döngülerinde sayaçlar : operatörü sonrası koşul kısmında da belirtilebilir.
+    var totalOfFirstTen: u16 = 0;
+    var ctr: u16 = 1;
+    while (ctr <= 100) : (ctr += 1) {
+        totalOfFirstTen += ctr;
+    }
+    std.debug.print("Sum of 1 to 100 is {d}\n", .{totalOfFirstTen});
+
     // Birde for döngüsü yazalım
     // 110 ile 125 arasındaki sayıların çift veya tek sayı olduklarına dair ekrana bilgi yazdırıyoruz
     for (110..126) |number| {
