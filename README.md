@@ -34,7 +34,14 @@ zig test tests.zig
 
 ## Dille İlgili Bazı Notlar
 
-- Genelde C dilinin modern bir alternatifi olarak tanımlanıyor. C türevli söz dizimine de sahip.
+- Bellek Yönetimi: Nesneler bellekte üç alanda ele alınır. **Global Data Register/Section**, **Stack** ve **Heap**. Heap bellek bölgesinin yönetimi yani nesneler için yer tahsis etme *(allocation)* ve serbest bırakma *(deallocation)* işlemleri programcının sorumluluğundadır.
+  - **Literal** değerler ("Hello World", 23, true, 3.14 vb) Global Data Section bölgesinde tutulur.
+  - Değeri(value) derleme zamanında *(known at compile time)* bilinen her **constant** nesne yine **Global Data Section**'da tutulur.
+  - **Constant** veya değiştirilebilir değişkenlerden *(var ile tanımlananlar)* hangisi kullanılırsa kullanılsın boyutu derleme zamanında bilenen nesneler bulundukları **scope** dahilinde **Stack** bellek bölgesinde tutulur. *(Stack bilindiği üzere Last In First Out - LIFO prensibi ile çalışan bir bellek bölgesidir. Kapasite olarak daha az bir alana sahiptir.)*
+  - Herhangi bir **allocator** bileşeninin **alloc** veya **create** fonksiyonları ile oluşturulan nesneler *(istisnai allocator türleri hariç - FixedBufferAllocator gibi)* **Heap** bellek bölgesinde tutulur. *(Allocator bileşenleri bellekte yer tahsis etmek için kullanılan standart kütüphane enstrümanlarıdır. std.heap modülü altında bulunurlar. Bu bileşenler [Allocator](https://ziglang.org/documentation/master/std/#std.mem.Allocator) arayüzünü uygularlar ve standart olarak alloc, create, destroy, free gibi metotları içerirler.)*
+  - **Heap** bellek bölgesine sadece allocator bileşenleri yardımıyla erişilebilinir. Boyutu derleme zamanında kestirelemeyen ve çalışma zamanında da sürekli büyüyüp küçülebilen nesneler için **heap** bellek bölgesi tercih edilir.
+  - **Stack** bellek bölgesine alınan yerel değişkenler kapsam dışına çıkıldığında otomatik olarak serbest bırakılırlar. Ancak **heap** bellek bölgesine alınan nesnelerin serbest bırakılması *(deallocation)* programcının sorumluluğundadır. Özellikle **heap** üzerinde programcı tarafında tahsis edilen alanların serbest bırakılması unutulmamalıdır.
+- Zig, genelde **C programlama dilinin** modern bir alternatifi olarak tanımlanmaktadır. C türevli bir söz dizimine sahiptir. Legacy **C** ve **C++** kod tabanlarının modernize edilmesi için kullanılabilir.
 - **Strongly Typed** sistemini kullanan derlemeli bir dil.
 - Herhangi bir **Garbage Collector** mekanizması içermiyor.
 - Zig ile oluşturlan projeleri derlemek için ayrı bir tool set'e ihtiyaç yok zira derleyici dil sistemi içerisinde inşa edilmiş. Söz gelimi C,C++ gibi dillerde **gcc, clang** gibi derleyicilere ihtiyaç duyulurken Zig'de buna gerek yok. Bu nedenle **zig init** ile başlatılan projelerde zig ile yazılmış ve build, run, test gibi işlemleri yapan bir **build.zig** dosyası bulunuyor.
