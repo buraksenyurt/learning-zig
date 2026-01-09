@@ -3,6 +3,7 @@ const std = @import("std");
 pub fn main() void {
     // Bir çok dilde olduğu gibi Zig'de de slice enstrümanı vardır.
     // Bazen "Fat Pointers" olarak isimlendiriliyorlar zira bir pointer'ın iki katı bellek kaplıyorlar.
+    // Ancak daha çok Many-Item pointer olarak ifade edilmekteler.
     // Bir slice genellikle bir pointer ve uzunluk bilgisi içerir ve bellekteki başka bir serinin belli bir parçasını kullanmamızı sağlar
     // Go dilindeki slice kavramına benzer olduğu ifade ediliyor ama burada kapasite bilgisi yok.
     const someNumbers = [_]i32{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };

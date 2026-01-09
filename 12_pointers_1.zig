@@ -15,7 +15,8 @@ pub fn main() void {
 
     // pointer'ları const ile de tanımlayabiliriz
     const luckySeven: u8 = 7;
-    std.debug.print("Lucky Seven : {d}\n", .{luckySeven});
+    const ptrLuckySeven: *const u8 = &luckySeven;
+    std.debug.print("Pointer to Lucky Seven Address: {*} and the value is {d}\n", .{ ptrLuckySeven, ptrLuckySeven.* });
 
     // // const olarak tanımlanan pointer değerleri kesin olarak değiştirilemez.
     // // Aşağıdaki kod parçasında iki hata söz konusudur
