@@ -53,10 +53,65 @@ pub fn main() !void {
     }
 
     // SAMPLE 03: Page Allocator ve Fixed Buffer Allocator'ın birlikte kullanımı;
+    // Yukarıdaki örneğin tersine aşağıdaki kullanımda önce heap bellek bölgesinde 16 mb'lık bir yer ayrılıyor.
+    // Sonrasında bir FixedBufferAllocator bu alan ile çalışacak şekilde oluşturuluyor.
+    const heap = std.heap.page_allocator;
+    const tempBuffer = try heap.alloc(u8, 16 * 1024 * 1024); // Heap üzerinde 16 MB'lık alan tahsisi
+    defer heap.free(tempBuffer); // Tahsis edilen alanın serbest kalması için defer bildirimi yapılıyor
+    var combinedFixedAllocator = std.heap.FixedBufferAllocator.init(tempBuffer);
+    const combinedAlloc = combinedFixedAllocator.allocator();
+    const largeData = try combinedAlloc.alloc(u8, 8 * 1024 * 1024); // FixedBufferAllocator kullanılarak 8 MB'lık bir yer tahsis ediliyor
+    defer combinedAlloc.free(largeData); // Tahsis edilen yerin serbest bırakılması için defer bildirimi yapılıyor
+    std.debug.print("\nCombined Allocator allocated {d} bytes.\n", .{largeData.len});
 
     // SAMPLE 04: Arena Allocator Kullanımı;
+    // Go dilindeki Arena yapısına benzer şekilde çalışan bir allocator türüdür.
+    // Bu allocator ile n defa bellek tahsisi yapıp, tek seferde hepsini serbest bırakmak mümkündür.
+    // Oluştururken başka bir Allocator gerektirir ki aşağıdaki örnekte kodun üst kısmında tanımladığımız
+    // GeneralPurposeAllocator kullanılmakta.
+    var arenaAllocator = std.heap.ArenaAllocator.init(allocator);
+    defer arenaAllocator.deinit(); // Tüm tahsis edilen bellek bloklarını serbest bırakmak için deinit çağrısı
+    const arenaAlloc = arenaAllocator.allocator();
+    const firstBlock = try arenaAlloc.alloc(u8, 128); // Arena üzerinden 128 byte'lık bir yer tahsisi
+    const secondBlock = try arenaAlloc.alloc(u8, 256); // Arena üzerinden 256 byte'lık bir yer tahsisi
+    const thirdBlock = try arenaAlloc.alloc(u8, 512); // Arena üzerinden 512 byte'lık bir yer tahsisi
+    _ = thirdBlock; // Üçüncü blok kullanılmıyor, sadece tahsis ediliyor
+    std.debug.print("Arena Allocator allocated blocks of sizes: {d} and {d} bytes.\n", .{ firstBlock.len, secondBlock.len });
 
     // SAMPLE 05: alloc ve free metodlarının kullanımı;
+    // Aşağıdaki örnek kod parçasında kullanıcının girdiği bir ifade için alloc ve free metodları kullanılıyor.
+    var inputGpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const inputAllocator = inputGpa.allocator();
+    const userInput = try inputAllocator.alloc(u8, 128); // 128 byte uzunluğunda bir yer tahsisi yaptık
+    defer inputAllocator.free(userInput); // Tahsis edilen yerin serbest bırakılması için defer bildirimi
+    for (0..userInput.len) |i| {
+        userInput[i] = 0; // Bellek bölgesini sıfırlıyoruz
+    }
+    std.debug.print("Please enter your name: ", .{});
+    const reader = std.io.getStdIn().reader();
+    _ = try reader.readUntilDelimiterOrEof(userInput, '\n');
+    std.debug.print("Hello, {s}How are you :)\n", .{userInput});
 
     // SAMPLE 06: Sadece yeteri kadar bellek tahisi yapmak istersek;
+    // Örneğin kategori bilgisini taşıyan bir struct için heap üzerinde gerektiği kadar yer tahsisi yapmak istediğimiz düşünelim.
+    // Bu durumda create ve destroy metodlarını alloc ve free yerine tercih etmek daha doğru olacaktır.
+    var categoryAllocator = std.heap.GeneralPurposeAllocator(.{}){};
+    const catAlloc = categoryAllocator.allocator();
+    const category = try catAlloc.create(Category); // Sadece Category struct'ı için yeterli bellek tahsisi yapılıyor
+    defer catAlloc.destroy(category); // Tahsis edilen bellek bölgesinin serbest bırakılması için destroy çağrısı
+    category.* = Category.init(1, "Computer Parts");
+    std.debug.print("Category ID: {d}, Name: {s}\n", .{ category.id, category.name });
+    std.debug.print("The size of the category struct is {d} bytes.\n", .{@sizeOf(Category)});
 }
+
+const Category = struct {
+    id: usize,
+    name: []const u8,
+
+    pub fn init(id: usize, name: []const u8) @This() {
+        return .{
+            .id = id,
+            .name = name,
+        };
+    }
+};
