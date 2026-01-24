@@ -11,18 +11,35 @@ pub fn main() !void {
     std.debug.print("Server listening on {any}\n", .{socket.address});
     // Address veri yapısının listen metodunu kullanarak sunucuyu dinleme moduna aldık
     var server = try socket.address.listen(.{});
-    // ve aşağıdaki satırla da gelen istekleri kabul etmeye başladık.
-    const connection = try server.accept();
-    // Gelen istekler için 1024 byte'lık bir buffer tanımladık.
-    // Başlangıçta içeriğini sıfırlıyoruz
-    var buffer: [1024]u8 = undefined;
-    for (0..buffer.len) |i| {
-        buffer[i] = 0;
+
+    while (true) {
+        // ve aşağıdaki satırla da gelen istekleri kabul etmeye başladık.
+        const connection = try server.accept();
+        defer connection.stream.close();
+
+        // Gelen istekler için 1024 byte'lık bir buffer tanımladık.
+        // Başlangıçta içeriğini sıfırlıyoruz
+        var buffer: [1024]u8 = undefined;
+        for (0..buffer.len) |i| {
+            buffer[i] = 0;
+        }
+        // Aşağıdaki satırda connection'a gelen içerikleri referans olarak gönderdiğimiz
+        // buffer değişkeni içerisine yazdırıyoruz.
+        try RequestHandler.read(connection, &buffer);
+        // std.debug.print("RAW Request: {s}\n", .{buffer[0..]});
+
+        const request = try RequestHandler.parse(buffer[0..]);
+        std.debug.print("PARSED request:\nMethod={any}, URI={s}, Version={s}\n", .{
+            request.header.method,
+            request.header.uri,
+            request.header.version,
+        });
+        std.debug.print("Body: {s}\n", .{request.body});
+
+        // Şimdilik deneysel olarak her isteğe 200 OK cevabı dönmekteyiz.
+        //todo@buraksenyurt GET ve POST için ayrı işlemler yaptıralım.
+        _ = try connection.stream.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK");
     }
-    // Aşağıdaki satırda connection'a gelen içerikleri referans olarak gönderdiğimiz
-    // buffer değişkeni içerisine yazdırıyoruz.
-    try RequestHandler.read(connection, &buffer);
-    std.debug.print("{s}\n", .{buffer});
 }
 
 // HTTP Server'ımızda TCP tabanlı dinlemeyi yapmak için kullanacağımız veri yapısı
@@ -61,11 +78,12 @@ const RequestHandler = struct {
     }
 
     // Parser fonksiyonunun görevi gelen ham içeriği alıp, Request veri yapısına dönüştürmek.
-    // Burada ilk satırdan Header bilgilerini alırken, \n\n satırından itibaren de body kısmını ayrıştırıyoruz.
+    // Burada ilk satırdan Header bilgilerini alırken, CRLF CRLF (yani \r\n\r\n) karakterinden itibaren de body kısmını ayrıştırıyoruz.
     // Bu fonksiyon esasında hatalara oldukça müsait. İdeal senaryoda gelen HTTP içeriğindeki structure'ın standarda
     // uygun geldiğini düşünüyoruz. Test metotlarında bunla ilgili örnekler yer alıyor.
     pub fn parse(content: []const u8) !Request {
-        const headerLineIndex = std.mem.indexOfScalar(u8, content, '\n') orelse content.len;
+        // HTTP standardına göre ilk satır \r\n ile biter
+        const headerLineIndex = std.mem.indexOf(u8, content, "\r\n") orelse content.len;
 
         // ' ' karakterine göre bir Split Iterator nesnesi oluşturuyoruz.
         // Yani ilk satırda boşluk karakterine göre next() çağrıları ile ilerleyeip sırasıyla
@@ -85,11 +103,11 @@ const RequestHandler = struct {
         const header = RequestHeader.init(method, uriText, versionText);
 
         // Bu satırdan itibaren de body kısmını okumaya başladık.
-        // Body kısmının ayrıştırılması için çift yeni satır (\n\n) karakterini baz aldık. En azından
-        // Postman ile gelen istekler de bu şekilde bir içerik söz konusu. Daha detaylı testler ile deneyeceğim.
-        const bodyStartIndex = std.mem.indexOf(u8, content, "\n\n") orelse content.len;
+        // Body kısmının ayrıştırılması için HTTP standardı gereği \r\n\r\n (CRLF CRLF) karakterini baz alıyoruz.
+        const bodyStartIndex = std.mem.indexOf(u8, content, "\r\n\r\n") orelse content.len;
+        std.debug.print("Body starts at index: {}\n", .{bodyStartIndex});
         // Bir body içeriği söz konusu ile alıyoruz yoksa boş bırakıyoruz.
-        const bodyRaw = if (bodyStartIndex < content.len) content[bodyStartIndex + 2 ..] else "";
+        const bodyRaw = if (bodyStartIndex < content.len) content[bodyStartIndex + 4 ..] else "";
         // Sonda yer alan alt satır ve boşluk karakterlerini törpülüyoruz ve böylece body içeriğini tam olarak çekmiş oluyoruz.
         const body = std.mem.trim(u8, bodyRaw, "\n\r ");
 
@@ -172,15 +190,14 @@ const Request = struct {
 
 test "Request parsing works for HTTP GET correctly" {
     const rawRequest =
-        \\GET /api/v1/resource HTTP/1.1
-        \\User-Agent: PostmanRuntime/7.51.0
-        \\Accept: */*
-        \\Cache-Control: no-cache
-        \\Host: localhost:7000
-        \\Accept-Encoding: gzip, deflate, br
-        \\Connection: keep-alive
-        \\
-    ;
+        "GET /api/v1/resource HTTP/1.1\r\n" ++
+        "User-Agent: PostmanRuntime/7.51.0\r\n" ++
+        "Accept: */*\r\n" ++
+        "Cache-Control: no-cache\r\n" ++
+        "Host: localhost:7000\r\n" ++
+        "Accept-Encoding: gzip, deflate, br\r\n" ++
+        "Connection: keep-alive\r\n" ++
+        "\r\n";
     const parsedRequest = try RequestHandler.parse(rawRequest);
 
     try std.testing.expect(parsedRequest.header.method == HttpMethod.GET);
@@ -190,17 +207,15 @@ test "Request parsing works for HTTP GET correctly" {
 
 test "Request parsing works for HTTP POST with body correctly" {
     const rawRequest =
-        \\POST /api/v1/resource HTTP/1.1
-        \\User-Agent: PostmanRuntime/7.51.0
-        \\Accept: */*
-        \\Cache-Control: no-cache
-        \\Host: localhost:7000
-        \\Accept-Encoding: gzip, deflate, br
-        \\Connection: keep-alive
-        \\
-        \\{"name":"Can Cey Rambo","age":34}
-        \\
-    ;
+        "POST /api/v1/resource HTTP/1.1\r\n" ++
+        "User-Agent: PostmanRuntime/7.51.0\r\n" ++
+        "Accept: */*\r\n" ++
+        "Cache-Control: no-cache\r\n" ++
+        "Host: localhost:7000\r\n" ++
+        "Accept-Encoding: gzip, deflate, br\r\n" ++
+        "Connection: keep-alive\r\n" ++
+        "\r\n" ++
+        "{\"name\":\"Can Cey Rambo\",\"age\":34}";
     const parsedRequest = try RequestHandler.parse(rawRequest);
 
     try std.testing.expect(parsedRequest.header.method == HttpMethod.POST);
