@@ -5,6 +5,7 @@
 // Basit olarak HTTP Get, Post ile başlayalım.
 
 const std = @import("std");
+const Connection = std.net.Server.Connection;
 
 pub fn main() !void {
     const socket = try Socket.init();
@@ -15,6 +16,7 @@ pub fn main() !void {
     while (true) {
         // ve aşağıdaki satırla da gelen istekleri kabul etmeye başladık.
         const connection = try server.accept();
+        std.debug.print("New connection from {any}\n", .{connection.address});
         defer connection.stream.close();
 
         // Gelen istekler için 1024 byte'lık bir buffer tanımladık.
@@ -35,10 +37,30 @@ pub fn main() !void {
             request.header.version,
         });
         std.debug.print("Body: {s}\n", .{request.body});
+        if (std.mem.eql(u8, request.header.uri, "/")) {
+            // try sendIndexPageResponse(connection);
+            try sendIndexResponse(std.heap.page_allocator, connection);
+            continue;
+        } else if (std.mem.eql(u8, request.header.uri, "/api/v1/products")) {
+            if (request.header.method == HttpMethod.GET) {
+                // Deneysel olduğu için api/v1/products endpoint'ine gelen GET isteklerinde
+                // basit bir OK yanıtı döndürüyoruz.
+                try sendOkResponse(connection);
+                continue;
+            } else if (request.header.method == HttpMethod.POST) {
+                // POST isteklerinde body içeriğini de işlemek lazım ama bu deneysel çalışmada çok da gerekli değil.
+                // Şimdilik sadece HTTP 200 OK yanıtı gönderiyoruz.
+                try sendOkResponse(connection);
+                continue;
+            } else {
+                // Diğer HTTP metotları için şimdilik 404 Not Found yanıtı gönderiyoruz.
+                try sendNotFoundResponse(connection);
+                continue;
+            }
+        }
 
-        // Şimdilik deneysel olarak her isteğe 200 OK cevabı dönmekteyiz.
-        //todo@buraksenyurt GET ve POST için ayrı işlemler yaptıralım.
-        _ = try connection.stream.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK");
+        // Ayrıca tanımlı olmayan endpoint'ler için de 404 Not Found yanıtı gönderiyoruz.
+        try sendNotFoundResponse(connection);
     }
 }
 
@@ -72,7 +94,7 @@ const Socket = struct {
 const RequestHandler = struct {
     // Bu fonksiyon Connnection nesnesine gönderilen mesajları okur
     // ve bunları yine parametre olarak verilen buffer içerisine yazar
-    pub fn read(conn: std.net.Server.Connection, buffer: []u8) !void {
+    pub fn read(conn: Connection, buffer: []u8) !void {
         const reader = conn.stream.reader();
         _ = try reader.read(buffer);
     }
@@ -222,4 +244,50 @@ test "Request parsing works for HTTP POST with body correctly" {
     try std.testing.expect(std.mem.eql(u8, parsedRequest.header.uri, "/api/v1/resource"));
     try std.testing.expect(std.mem.eql(u8, parsedRequest.header.version, "HTTP/1.1"));
     try std.testing.expect(std.mem.eql(u8, parsedRequest.body, "{\"name\":\"Can Cey Rambo\",\"age\":34}"));
+}
+
+fn sendOkResponse(connection: Connection) !void {
+    const response = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK";
+    _ = try connection.stream.write(response);
+}
+
+fn sendNotFoundResponse(connection: Connection) !void {
+    const response = "HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\nConnection: close\r\n\r\nNot Found";
+    _ = try connection.stream.write(response);
+}
+
+// / adresine yani root'a gelen istekler için basit bir karşılama sayfası dönüyoruz.
+// Burada tipik olarak connection nesnesi üzerinde stream'e veri yazdırmaktayız.
+fn sendIndexPageResponse(connection: Connection) !void {
+    const body = "Index Page: Welcome to Zig HTTP Server!";
+
+    // İlk olarak Header bilgilerini yazdırıyoruz.
+    // Body uznunluğunu Content-Length başlığı ile belirtiyoruz.
+    // Ayrıca Content-Type başlığı ile de içeriğin text/plain olduğunu,
+    // Connection: close bildirimi ile de bu isteğin ardından bağlantının kapatılacağını belirttik
+    try connection.stream.writer().print(
+        "HTTP/1.1 200 OK\r\n" ++
+            "Content-Length: {d}\r\n" ++
+            "Content-Type: text/plain; charset=utf-8\r\n" ++
+            "Connection: close\r\n" ++
+            "\r\n",
+        .{body.len},
+    );
+
+    // Hemen arkasından da body içeriğini yazdırıyoruz.
+    try connection.stream.writeAll(body);
+}
+
+// Yukarıdaki kullanıma alternatif olarak allocator kullanan bir fonksiyon da yazabiliriz.
+fn sendIndexResponse(allocator: std.mem.Allocator, connection: Connection) !void {
+    const body = "Index Page: Welcome to Zig HTTP Server!";
+
+    const response = try std.fmt.allocPrint(
+        allocator,
+        "HTTP/1.1 200 OK\r\nContent-Length: {d}\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n{s}",
+        .{ body.len, body },
+    );
+    defer allocator.free(response);
+
+    try connection.stream.writeAll(response);
 }
