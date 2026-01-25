@@ -19,51 +19,61 @@ pub fn main() !void {
         std.debug.print("New connection from {any}\n", .{connection.address});
         defer connection.stream.close();
 
-        // Gelen istekler için 1024 byte'lık bir buffer tanımladık.
-        var buffer: [1024]u8 = undefined;
-
-        // Connection'a gelen içerikleri referans olarak gönderdiğimiz
-        // buffer değişkeni içerisine yazdırıyoruz. Önce n ile ne kadarlık bir veri okunduğunu alıyoruz.
-        // Sonrasında ise bu veriyi parse edip Request veri yapısına dönüştürüyoruz.
-        const n = try RequestHandler.read(connection, buffer[0..]);
-        // std.debug.print("RAW Request: {s}\n", .{buffer[0..n]});
-        const request = try RequestHandler.parse(buffer[0..n]);
-        std.debug.print("PARSED request:\nMethod={any}, URI={s}, Version={s}\n", .{
-            request.header.method,
-            request.header.uri,
-            request.header.version,
-        });
-        std.debug.print("Body: {s}\n", .{request.body});
-        // api/v1/products endpoint'ine gelen istekleri denetleyeceğiz ama burada
-        // api/v1/products?id=123 gibi query parametreleri de olabilir.
-        // Bu nedenle '?' karakterine göre URI'yi bölüp path kısmını alıyoruz.
-        var it = std.mem.splitScalar(u8, request.header.uri, '?');
-        const path = it.first();
-        if (std.mem.eql(u8, path, "/")) {
-            try sendIndexPageResponse(connection);
-            // try sendIndexResponse(std.heap.page_allocator, connection);
-            continue;
-        } else if (std.mem.eql(u8, path, "/api/v1/products")) {
-            if (request.header.method == HttpMethod.GET) {
-                // Deneysel olduğu için api/v1/products endpoint'ine gelen GET isteklerinde
-                // basit bir OK yanıtı döndürüyoruz.
-                try sendTextResponse(connection, "200 OK", "OK");
-                continue;
-            } else if (request.header.method == HttpMethod.POST) {
-                // POST isteklerinde body içeriğini de işlemek lazım ama bu deneysel çalışmada çok da gerekli değil.
-                // Şimdilik sadece HTTP 200 OK yanıtı gönderiyoruz.
-                try sendTextResponse(connection, "200 OK", "OK");
-                continue;
-            } else {
-                // Diğer HTTP metotları için şimdilik 404 Not Found yanıtı gönderiyoruz.
-                try sendTextResponse(connection, "404 Not Found", "Not Found");
-                continue;
-            }
-        }
-
-        // Ayrıca tanımlı olmayan endpoint'ler için de 404 Not Found yanıtı gönderiyoruz.
-        try sendTextResponse(connection, "404 Not Found", "Not Found");
+        // Gelen istekleri daha kolay yönetmek için bir fonksiyona devrediyoruz.
+        // Olası bir hata durumunu catch ile değerlendirip logluyoruz.
+        // ve hatta istemci tarafına 500 Internal Server Error yanıtı gönderiyoruz.
+        handleConnection(connection) catch |err| {
+            std.debug.print("Error handling connection: {any}\n", .{err});
+            sendTextResponse(connection, "500 Internal Server Error", "Internal Server Error") catch {};
+        };
     }
+}
+
+fn handleConnection(connection: Connection) !void {
+    // Gelen isteği okumak için bir buffer tanımladık
+    var buffer: [1024]u8 = undefined;
+    // Öncelikle boyutu bir yakalıyoruz
+    const n = try RequestHandler.read(connection, buffer[0..]);
+    if (n == 0) return; // 0 ise işlenmeye değmez :D early return ile çıkıyoruz.
+
+    // Burası da gelen ham içeriği parse edip Request veri yapısına dönüştürdüğümüz kısım
+    const request = try RequestHandler.parse(buffer[0..n]);
+
+    // Basit bir loglama yapıyoruz
+    std.debug.print("PARSED request:\nMethod={any}, URI={s}, Version={s}\n", .{
+        request.header.method,
+        request.header.uri,
+        request.header.version,
+    });
+
+    // URI kısmını '?' karakterine göre ayırıyoruz.
+    // Zira, api/v1/resource?query=param gibi query parametreleri olabilir. Bu durumlarda 404 dönmek istemedim.
+    var it = std.mem.splitScalar(u8, request.header.uri, '?');
+    const path = it.first();
+
+    // Şimdi de gelen isteği ele alması için route mekanizmasına yönlendiriyoruz.
+    try handleRoute(connection, request, path);
+}
+
+// Deneysel bir çalışma olduğu için sadece URI bilgilerine bakıp
+// HTTP 200 OK veya 404 Not Found dönüyoruz.
+fn handleRoute(connection: Connection, request: Request, path: []const u8) !void {
+    if (std.mem.eql(u8, path, "/")) {
+        try sendIndexPageResponse(connection);
+    }
+
+    if (std.mem.eql(u8, path, "/api/v1/products")) {
+        try handleProducts(connection, request);
+    }
+
+    return sendTextResponse(connection, "404 Not Found", "Not Found");
+}
+
+fn handleProducts(connection: Connection, request: Request) !void {
+    return switch (request.header.method) {
+        .GET, .POST => try sendTextResponse(connection, "200 OK", "OK"),
+        else => try sendTextResponse(connection, "404 Not Found", "Not Found"),
+    };
 }
 
 // HTTP Server'ımızda TCP tabanlı dinlemeyi yapmak için kullanacağımız veri yapısı
