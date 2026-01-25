@@ -20,47 +20,49 @@ pub fn main() !void {
         defer connection.stream.close();
 
         // Gelen istekler için 1024 byte'lık bir buffer tanımladık.
-        // Başlangıçta içeriğini sıfırlıyoruz
         var buffer: [1024]u8 = undefined;
-        for (0..buffer.len) |i| {
-            buffer[i] = 0;
-        }
-        // Aşağıdaki satırda connection'a gelen içerikleri referans olarak gönderdiğimiz
-        // buffer değişkeni içerisine yazdırıyoruz.
-        try RequestHandler.read(connection, &buffer);
-        // std.debug.print("RAW Request: {s}\n", .{buffer[0..]});
 
-        const request = try RequestHandler.parse(buffer[0..]);
+        // Connection'a gelen içerikleri referans olarak gönderdiğimiz
+        // buffer değişkeni içerisine yazdırıyoruz. Önce n ile ne kadarlık bir veri okunduğunu alıyoruz.
+        // Sonrasında ise bu veriyi parse edip Request veri yapısına dönüştürüyoruz.
+        const n = try RequestHandler.read(connection, buffer[0..]);
+        // std.debug.print("RAW Request: {s}\n", .{buffer[0..n]});
+        const request = try RequestHandler.parse(buffer[0..n]);
         std.debug.print("PARSED request:\nMethod={any}, URI={s}, Version={s}\n", .{
             request.header.method,
             request.header.uri,
             request.header.version,
         });
         std.debug.print("Body: {s}\n", .{request.body});
-        if (std.mem.eql(u8, request.header.uri, "/")) {
-            // try sendIndexPageResponse(connection);
-            try sendIndexResponse(std.heap.page_allocator, connection);
+        // api/v1/products endpoint'ine gelen istekleri denetleyeceğiz ama burada
+        // api/v1/products?id=123 gibi query parametreleri de olabilir.
+        // Bu nedenle '?' karakterine göre URI'yi bölüp path kısmını alıyoruz.
+        var it = std.mem.splitScalar(u8, request.header.uri, '?');
+        const path = it.first();
+        if (std.mem.eql(u8, path, "/")) {
+            try sendIndexPageResponse(connection);
+            // try sendIndexResponse(std.heap.page_allocator, connection);
             continue;
-        } else if (std.mem.eql(u8, request.header.uri, "/api/v1/products")) {
+        } else if (std.mem.eql(u8, path, "/api/v1/products")) {
             if (request.header.method == HttpMethod.GET) {
                 // Deneysel olduğu için api/v1/products endpoint'ine gelen GET isteklerinde
                 // basit bir OK yanıtı döndürüyoruz.
-                try sendOkResponse(connection);
+                try sendTextResponse(connection, "200 OK", "OK");
                 continue;
             } else if (request.header.method == HttpMethod.POST) {
                 // POST isteklerinde body içeriğini de işlemek lazım ama bu deneysel çalışmada çok da gerekli değil.
                 // Şimdilik sadece HTTP 200 OK yanıtı gönderiyoruz.
-                try sendOkResponse(connection);
+                try sendTextResponse(connection, "200 OK", "OK");
                 continue;
             } else {
                 // Diğer HTTP metotları için şimdilik 404 Not Found yanıtı gönderiyoruz.
-                try sendNotFoundResponse(connection);
+                try sendTextResponse(connection, "404 Not Found", "Not Found");
                 continue;
             }
         }
 
         // Ayrıca tanımlı olmayan endpoint'ler için de 404 Not Found yanıtı gönderiyoruz.
-        try sendNotFoundResponse(connection);
+        try sendTextResponse(connection, "404 Not Found", "Not Found");
     }
 }
 
@@ -94,9 +96,8 @@ const Socket = struct {
 const RequestHandler = struct {
     // Bu fonksiyon Connnection nesnesine gönderilen mesajları okur
     // ve bunları yine parametre olarak verilen buffer içerisine yazar
-    pub fn read(conn: Connection, buffer: []u8) !void {
-        const reader = conn.stream.reader();
-        _ = try reader.read(buffer);
+    pub fn read(conn: Connection, buffer: []u8) !usize {
+        return try conn.stream.reader().read(buffer);
     }
 
     // Parser fonksiyonunun görevi gelen ham içeriği alıp, Request veri yapısına dönüştürmek.
@@ -149,8 +150,7 @@ const HttpMethod = enum {
     PATCH,
     DELETE,
     pub fn init(text: []const u8) !@This() {
-        return Mapper.get(text) orelse
-            return error.InvalidHttpMethod;
+        return Mapper.get(text) orelse error.InvalidHttpMethod;
     }
 
     pub fn isSupported(method: []const u8) bool {
@@ -203,10 +203,7 @@ const Request = struct {
     header: RequestHeader,
     body: []const u8,
     pub fn init(header: RequestHeader, body: []const u8) @This() {
-        .{
-            .header = header,
-            .body = body,
-        };
+        return .{ .header = header, .body = body };
     }
 };
 
@@ -246,14 +243,16 @@ test "Request parsing works for HTTP POST with body correctly" {
     try std.testing.expect(std.mem.eql(u8, parsedRequest.body, "{\"name\":\"Can Cey Rambo\",\"age\":34}"));
 }
 
-fn sendOkResponse(connection: Connection) !void {
-    const response = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK";
-    _ = try connection.stream.write(response);
-}
-
-fn sendNotFoundResponse(connection: Connection) !void {
-    const response = "HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\nConnection: close\r\n\r\nNot Found";
-    _ = try connection.stream.write(response);
+fn sendTextResponse(connection: Connection, status: []const u8, body: []const u8) !void {
+    try connection.stream.writer().print(
+        "HTTP/1.1 {s}\r\n" ++
+            "Content-Length: {d}\r\n" ++
+            "Content-Type: text/plain; charset=utf-8\r\n" ++
+            "Connection: close\r\n" ++
+            "\r\n",
+        .{ status, body.len },
+    );
+    try connection.stream.writeAll(body);
 }
 
 // / adresine yani root'a gelen istekler için basit bir karşılama sayfası dönüyoruz.
@@ -278,16 +277,16 @@ fn sendIndexPageResponse(connection: Connection) !void {
     try connection.stream.writeAll(body);
 }
 
-// Yukarıdaki kullanıma alternatif olarak allocator kullanan bir fonksiyon da yazabiliriz.
-fn sendIndexResponse(allocator: std.mem.Allocator, connection: Connection) !void {
-    const body = "Index Page: Welcome to Zig HTTP Server!";
+// // Yukarıdaki kullanıma alternatif olarak allocator kullanan bir fonksiyon da yazabiliriz.
+// fn sendIndexResponse(allocator: std.mem.Allocator, connection: Connection) !void {
+//     const body = "Index Page: Welcome to Zig HTTP Server!";
 
-    const response = try std.fmt.allocPrint(
-        allocator,
-        "HTTP/1.1 200 OK\r\nContent-Length: {d}\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n{s}",
-        .{ body.len, body },
-    );
-    defer allocator.free(response);
+//     const response = try std.fmt.allocPrint(
+//         allocator,
+//         "HTTP/1.1 200 OK\r\nContent-Length: {d}\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n{s}",
+//         .{ body.len, body },
+//     );
+//     defer allocator.free(response);
 
-    try connection.stream.writeAll(response);
-}
+//     try connection.stream.writeAll(response);
+// }
