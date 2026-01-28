@@ -1,6 +1,20 @@
-{
-   "title": "Pac Man",
-   "genre": "Arcade",
-   "releaseYear": 1980,
-   "onSale": true
-}
+[
+   {
+      "title": "Pac Man",
+      "genre": "Arcade",
+      "releaseYear": 1980,
+      "onSale": true
+   },
+   {
+      "title": "The Legend of Zelda",
+      "genre": "Adventure",
+      "releaseYear": 1986,
+      "onSale": false
+   },
+   {
+      "title": "Super Mario Bros.",
+      "genre": "Platformer",
+      "releaseYear": 1985,
+      "onSale": true
+   }
+]

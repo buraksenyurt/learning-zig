@@ -18,11 +18,25 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const pacManGame = Game{
-        .title = "Pac Man",
-        .genre = "Arcade",
-        .releaseYear = 1980,
-        .onSale = true,
+    const games = [_]Game{
+        Game{
+            .title = "Pac Man",
+            .genre = "Arcade",
+            .releaseYear = 1980,
+            .onSale = true,
+        },
+        Game{
+            .title = "The Legend of Zelda",
+            .genre = "Adventure",
+            .releaseYear = 1986,
+            .onSale = false,
+        },
+        Game{
+            .title = "Super Mario Bros.",
+            .genre = "Platformer",
+            .releaseYear = 1985,
+            .onSale = true,
+        },
     };
 
     // JSON'a serileştirme kısmı. Burada u8 türünden bir ArrayList kullandık.
@@ -37,7 +51,7 @@ pub fn main() !void {
     // Son parametre de serileştirilmiş içeriği yazacağımız buffer ki bu da allocator
     // yoluyla heap'te açılmış bir ArrayList.
     try json.stringify(
-        pacManGame,
+        games,
         .{ .whitespace = .indent_3 },
         buffer.writer(),
     );
@@ -53,7 +67,7 @@ pub fn main() !void {
     defer file.close();
     // buffer içeriğini dosyaya writeAll fonksiyonu ile aktardık
     try file.writeAll(buffer.items);
-    std.debug.print("JSON data written to {s}\n", .{filePath});
+    // std.debug.print("JSON data written to {s}\n", .{filePath});
 
     // Şimdi de deneysel çalışmaya dosyadan içeriği okuma adımı ile devam ediyoruz
     const readFile = try std.fs.cwd().openFile(filePath, .{});
@@ -69,22 +83,24 @@ pub fn main() !void {
     defer allocator.free(jsonData);
 
     // Şimdi de dosyadan okunan içeriği parseFromSlice metodu yardımıyla
-    // Game türüne dönüştürüyoruz.
+    // Game türünden bir diziye dönüştürüyoruz.
     // İlk parametre dönüştürülecek veri yapısı, ikinci parametre allocator nesnemiz,
     // üçüncü parametre JSON verisi, dördüncü parametre ise opsiyonel ayarlar yer alıyor.
     const parsedJson = try json.parseFromSlice(
-        Game,
+        []Game,
         allocator,
         jsonData,
         .{},
     );
     defer parsedJson.deinit();
 
-    std.debug.print("\nDeserialized Game Data:\n", .{});
-    std.debug.print("Title: {s}\nGenre: {s}\nRelease Year: {d}\nOn Sale: {}\n", .{
-        parsedJson.value.title,
-        parsedJson.value.genre,
-        parsedJson.value.releaseYear,
-        parsedJson.value.onSale,
-    });
+    std.debug.print("\nGames:\n", .{});
+    for (parsedJson.value) |game| {
+        std.debug.print("{s},{s},{d},{}\n", .{
+            game.title,
+            game.genre,
+            game.releaseYear,
+            game.onSale,
+        });
+    }
 }
