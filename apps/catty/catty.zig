@@ -16,23 +16,40 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, arguments);
     const stdout = std.io.getStdOut().writer();
 
-    switch (arguments.len) {
-        0 | 1 => try catStdin(stdout),
-        else => {
-            if (std.mem.eql(u8, "--help", arguments[1]) or std.mem.eql(u8, "-h", arguments[1])) {
-                try printUsage();
-            } else {
-                var i: usize = 1;
-                while (i < arguments.len) : (i += 1) {
-                    try catSingleFile(arguments[i], stdout);
-                }
-            }
-        },
+    var argIndex: usize = 1;
+    var useLineNumbers = false;
+    while (argIndex < arguments.len) : (argIndex += 1) {
+        const arg = arguments[argIndex];
+        if (!std.mem.startsWith(u8, arg, "-")) break;
+
+        if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
+            try printUsage();
+            return;
+        } else if (std.mem.eql(u8, arg, "-n")) {
+            useLineNumbers = true;
+        } else if (std.mem.eql(u8, arg, "--")) {
+            argIndex += 1;
+            break;
+        } else {
+            try std.io.getStdErr().writer().print("Invalid options: {s}\n\n", .{arg});
+            try printUsage();
+            return;
+        }
+    }
+
+    if (argIndex >= arguments.len) {
+        try catStdin(stdout, useLineNumbers);
+        return;
+    }
+    while (argIndex < arguments.len) : (argIndex += 1) {
+        try catSingleFile(arguments[argIndex], stdout, useLineNumbers);
     }
 }
 
 // zig run catty.zig -- ./samples/file_1.txt ./samples/file_2.txt ./samples/games.json ./samples/games.dat
-fn catSingleFile(path: []const u8, stdout: anytype) !void {
+fn catSingleFile(path: []const u8, stdout: anytype, useLineNumbers: bool) !void {
+    _ = useLineNumbers;
+
     var file = try fs.cwd().openFile(path, .{});
     defer file.close();
 
@@ -47,7 +64,8 @@ fn catSingleFile(path: []const u8, stdout: anytype) !void {
 }
 
 // echo "Hello World from pipeline" | zig run .\catty.zig
-fn catStdin(stdout: anytype) !void {
+fn catStdin(stdout: anytype, useLineNumbers: bool) !void {
+    _ = useLineNumbers;
     var stdin = std.io.getStdIn().reader();
     var buffer: [8 * 1024]u8 = undefined;
 
