@@ -1,54 +1,91 @@
 // CLONE   : Unix Cat programının hafifsiklet bir sürümü
-// AMAÇLAR : Allocator kullanımını kavramak, IO hatalarını ele almak, komut satırından arguman okumak, anytype kullanmak
+// AMAÇLAR :
+//          - Allocator kullanımını kavramak (OS Seviyesinde özelleştirmek),
+//          - IO hatalarını ele almak,
+//          - Komut satırından arguman okumak,
+//          - anytype kullanmak
 // YORUM   : Cat uygulaması felsefe olarak bir veya daha fazla byte'tan oluşan stream'leri tek bir byte stream içerisine almayı hedefler.
 //           Verinin text, binary olması veya network hattından gelmesi ya da bir sürücü çıktısı (device output) cat uygulaması için çok
 //           önemli değildir. Zira Unix felsefesi şunu öğütler; Write programs that do one thing well, Write programs to work together
 const std = @import("std");
 const fs = std.fs;
+const builtin = @import("builtin");
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-
-    const allocator = gpa.allocator();
-
-    const arguments = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, arguments);
     const stdout = std.io.getStdOut().writer();
 
-    var argIndex: usize = 1;
-    var useLineNumbers = false;
-    while (argIndex < arguments.len) : (argIndex += 1) {
-        const arg = arguments[argIndex];
-        if (!std.mem.startsWith(u8, arg, "-")) break;
+    if (builtin.os.tag == .windows) {
+        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        defer _ = gpa.deinit();
+        const allocator = gpa.allocator();
 
-        if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
-            try printUsage();
-            return;
-        } else if (std.mem.eql(u8, arg, "-n")) {
-            useLineNumbers = true;
-        } else if (std.mem.eql(u8, arg, "--")) {
-            argIndex += 1;
-            break;
-        } else {
-            try std.io.getStdErr().writer().print("Invalid options: {s}\n\n", .{arg});
-            try printUsage();
-            return;
-        }
+        var iterator = try std.process.argsWithAllocator(allocator);
+        defer iterator.deinit();
+        const appPath = iterator.next() orelse "catty";
+        const appName = std.fs.path.basename(appPath);
+
+        try processArgs(&iterator, stdout, appName);
+    } else {
+        var iterator = std.process.args();
+        const appPath = iterator.next() orelse "catty";
+        const appName = std.fs.path.basename(appPath);
+
+        try processArgs(&iterator, stdout, appName);
     }
+}
 
-    if (argIndex >= arguments.len) {
-        try catStdin(stdout, useLineNumbers);
+fn processArgs(iterator: anytype, stdout: anytype, appName: []const u8) !void {
+    var isErrorState: bool = false;
+    const firstArg = iterator.next() orelse {
+        try catStdin(stdout, false);
+        return;
+    };
+
+    if (std.mem.eql(u8, firstArg, "--help") or std.mem.eql(u8, firstArg, "-h")) {
+        try printUsage();
         return;
     }
-    while (argIndex < arguments.len) : (argIndex += 1) {
-        try catSingleFile(arguments[argIndex], stdout, useLineNumbers);
+
+    if (std.mem.eql(u8, firstArg, "-n")) {
+        const path = iterator.next() orelse {
+            try catStdin(stdout, true);
+            return;
+        };
+        catSingleFile(path, stdout, true) catch |err| {
+            isErrorState = true;
+            try printFileError(appName, std.io.getStdErr().writer(), path, err);
+        };
+        while (iterator.next()) |p| {
+            catSingleFile(p, stdout, true) catch |err| {
+                isErrorState = true;
+                try printFileError(appName, std.io.getStdErr().writer(), p, err);
+            };
+        }
+        if (isErrorState) return std.process.exit(1);
+        return;
     }
+
+    try catSingleFile(firstArg, stdout, false);
+    while (iterator.next()) |p| {
+        catSingleFile(p, stdout, false) catch |err| {
+            isErrorState = true;
+            try printFileError(appName, std.io.getStdErr().writer(), p, err);
+        };
+    }
+    if (isErrorState) return std.process.exit(1);
+}
+
+fn printFileError(appName: []const u8, stderr: anytype, path: []const u8, err: anyerror) !void {
+    try stderr.print(
+        "{s}: {s}: {s}\n",
+        .{ appName, path, @errorName(err) },
+    );
 }
 
 // zig run catty.zig -- ./samples/file_1.txt ./samples/file_2.txt ./samples/games.json ./samples/games.dat
 // zig run catty.zig -- -n ./samples/file_1.txt ./samples/file_2.txt ./samples/games.json ./samples/games.dat
 // zig run catty.zig -- -n ./samples/games.dat
+// zig run catty.zig -- ./samples/games.dat ./none.txt ./samples/file_2.txt
 fn catSingleFile(path: []const u8, stdout: anytype, useLineNumbers: bool) !void {
     var file = try fs.cwd().openFile(path, .{});
     defer file.close();
