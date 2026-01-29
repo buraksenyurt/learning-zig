@@ -39,47 +39,13 @@ pub fn main() !void {
         },
     };
 
-    // JSON'a serileştirme kısmı. Burada u8 türünden bir ArrayList kullandık.
-    // ArrayList dinamik olarak büyüyebilen bir dizi yapısı gibi düşünülebilir
-    // Bu nedenle heap'te yer açmak için allocator kullanıyoruz.
-    var buffer = std.ArrayList(u8).init(allocator);
-    defer buffer.deinit(); // Çıkarken kaynakları serbest bırak
+    const gamesJson = try serializeGameList(&games, allocator);
+    defer allocator.free(gamesJson);
 
-    // JSON Serileştirme işinin yapıldığı yer burası
-    // İlk parametre serileştirilecek değişken,
-    // İkinci parametre bazı opsiyonel ayarlar. Örneğin girinti değeri 3 karaketer
-    // Son parametre de serileştirilmiş içeriği yazacağımız buffer ki bu da allocator
-    // yoluyla heap'te açılmış bir ArrayList.
-    try json.stringify(
-        games,
-        .{ .whitespace = .indent_3 },
-        buffer.writer(),
-    );
-    // Buffer içeriğini ekrana yazdırıp bir görelim
-    std.debug.print("Serialized JSON:\n{s}\n", .{buffer.items});
+    const filePath = "games.json";
+    try writeToFile(filePath, gamesJson);
 
-    // Burada da içeriği bir dosyaya yazmaya çalışıyoruz.
-    const filePath = "game_info.json";
-    var file = try std.fs.cwd().createFile(
-        filePath,
-        .{ .truncate = true }, // Her seferinde dosyayı sıfırlıyoruz
-    );
-    defer file.close();
-    // buffer içeriğini dosyaya writeAll fonksiyonu ile aktardık
-    try file.writeAll(buffer.items);
-    // std.debug.print("JSON data written to {s}\n", .{filePath});
-
-    // Şimdi de deneysel çalışmaya dosyadan içeriği okuma adımı ile devam ediyoruz
-    const readFile = try std.fs.cwd().openFile(filePath, .{});
-    defer readFile.close();
-
-    // Dosta içeriğini okurken maksimum 1 MB lık bir buffer kullandık
-    // ki bizim örnek için epey fazla. Daha büyük boyutlar için nasıl bir ayarlama yapılır
-    // incelemek lazım.
-    const jsonData = try readFile.readToEndAlloc(
-        allocator,
-        1024 * 1024,
-    );
+    const jsonData = try readFromFile(filePath, allocator);
     defer allocator.free(jsonData);
 
     // Şimdi de dosyadan okunan içeriği parseFromSlice metodu yardımıyla
@@ -103,4 +69,52 @@ pub fn main() !void {
             game.onSale,
         });
     }
+}
+
+fn serializeGameList(games: []const Game, allocator: std.mem.Allocator) ![]u8 {
+    var buffer = std.ArrayList(u8).init(allocator);
+    // defer buffer.deinit(); // toOwnedSlice kullanacağımız için defer kaldırıldı
+    // Kaldırmadığımız durumda buradaki buffer serbest bırakılır ve main'de çağıran taraf
+    // bu belleğe erişmeye çalıştığında hata alınır.
+
+    // JSON Serileştirme işinin yapıldığı yer burası
+    // İlk parametre serileştirilecek değişken,
+    // İkinci parametre bazı opsiyonel ayarlar. Örneğin girinti değeri 3 karaketer
+    // Son parametre de serileştirilmiş içeriği yazacağımız buffer ki bu da allocator
+    // yoluyla heap'te açılmış bir ArrayList.
+    try json.stringify(
+        games,
+        .{ .whitespace = .indent_3 },
+        buffer.writer(),
+    );
+    std.debug.print("Serialized JSON:\n{s}\n", .{buffer.items});
+    // toOwnedSlice() ile buffer'ın sahipliğini çağırana aldık
+    return buffer.toOwnedSlice();
+}
+
+fn writeToFile(filePath: []const u8, data: []const u8) !void {
+    var file = try std.fs.cwd().createFile(
+        filePath,
+        .{ .truncate = true }, // Her seferinde dosyayı sıfırlıyoruz
+    );
+    defer file.close();
+    // buffer içeriğini dosyaya writeAll fonksiyonu ile aktardık
+    try file.writeAll(data);
+    // std.debug.print("JSON data written to {s}\n", .{filePath});
+}
+
+fn readFromFile(filePath: []const u8, allocator: std.mem.Allocator) ![]u8 {
+    // Şimdi de deneysel çalışmaya dosyadan içeriği okuma adımı ile devam ediyoruz
+    const readFile = try std.fs.cwd().openFile(filePath, .{});
+    defer readFile.close();
+
+    // Dosta içeriğini okurken maksimum 1 MB lık bir buffer kullandık
+    // ki bizim örnek için epey fazla. Daha büyük boyutlar için nasıl bir ayarlama yapılır
+    // incelemek lazım.
+    const jsonData = try readFile.readToEndAlloc(
+        allocator,
+        1024 * 1024,
+    );
+    return jsonData;
+    // defer allocator.free(jsonData);
 }
