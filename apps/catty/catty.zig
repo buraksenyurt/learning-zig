@@ -47,32 +47,64 @@ pub fn main() !void {
 }
 
 // zig run catty.zig -- ./samples/file_1.txt ./samples/file_2.txt ./samples/games.json ./samples/games.dat
+// zig run catty.zig -- -n ./samples/file_1.txt ./samples/file_2.txt ./samples/games.json ./samples/games.dat
+// zig run catty.zig -- -n ./samples/games.dat
 fn catSingleFile(path: []const u8, stdout: anytype, useLineNumbers: bool) !void {
-    _ = useLineNumbers;
-
     var file = try fs.cwd().openFile(path, .{});
     defer file.close();
-
-    var buffer: [8 * 1024]u8 = undefined;
-
-    while (true) {
-        const n = try file.read(&buffer);
-        if (n == 0) break;
-
-        try stdout.writeAll(buffer[0..n]);
+    if (useLineNumbers) {
+        try copyRawContentWithLineNumbers(file, stdout);
+    } else {
+        try copyRawContent(file, stdout);
     }
 }
 
 // echo "Hello World from pipeline" | zig run .\catty.zig
+// echo "Hello World from pipeline" | zig run .\catty.zig -- -n
 fn catStdin(stdout: anytype, useLineNumbers: bool) !void {
-    _ = useLineNumbers;
-    var stdin = std.io.getStdIn().reader();
-    var buffer: [8 * 1024]u8 = undefined;
+    const stdin = std.io.getStdIn().reader();
+    if (useLineNumbers) {
+        try copyRawContentWithLineNumbers(stdin, stdout);
+    } else {
+        try copyRawContent(stdin, stdout);
+    }
+}
 
+fn copyRawContent(reader: anytype, stdout: anytype) !void {
+    var buffer: [8 * 1024]u8 = undefined;
     while (true) {
-        const n = try stdin.read(&buffer);
+        const n = try reader.read(&buffer);
         if (n == 0) break;
         try stdout.writeAll(buffer[0..n]);
+    }
+}
+
+fn copyRawContentWithLineNumbers(reader: anytype, stdout: anytype) !void {
+    var buffer: [8 * 1024]u8 = undefined;
+
+    var lineNumber: usize = 1;
+    var atLineStart = true;
+
+    while (true) {
+        const n = try reader.read(&buffer);
+        if (n == 0) break;
+
+        const chunk = buffer[0..n];
+        var i: usize = 0;
+        while (i < chunk.len) : (i += 1) {
+            if (atLineStart) {
+                try stdout.print("{d}\t", .{lineNumber});
+                atLineStart = false;
+            }
+
+            const currByte = chunk[i];
+            try stdout.writeByte(currByte);
+
+            if (currByte == '\n') {
+                lineNumber += 1;
+                atLineStart = true;
+            }
+        }
     }
 }
 
