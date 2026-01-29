@@ -16,13 +16,18 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, arguments);
     const stdout = std.io.getStdOut().writer();
 
-    if (arguments.len < 2) {
-        try catStdin(stdout);
-    }
-
-    var i: usize = 1;
-    while (i < arguments.len) : (i += 1) {
-        try catSingleFile(arguments[i], stdout);
+    switch (arguments.len) {
+        0 | 1 => try catStdin(stdout),
+        else => {
+            if (std.mem.eql(u8, "--help", arguments[1]) or std.mem.eql(u8, "-h", arguments[1])) {
+                try printUsage();
+            } else {
+                var i: usize = 1;
+                while (i < arguments.len) : (i += 1) {
+                    try catSingleFile(arguments[i], stdout);
+                }
+            }
+        },
     }
 }
 
@@ -38,7 +43,6 @@ fn catSingleFile(path: []const u8, stdout: anytype) !void {
         if (n == 0) break;
 
         try stdout.writeAll(buffer[0..n]);
-        try stdout.print("\n", .{});
     }
 }
 
@@ -52,4 +56,21 @@ fn catStdin(stdout: anytype) !void {
         if (n == 0) break;
         try stdout.writeAll(buffer[0..n]);
     }
+}
+
+fn printUsage() !void {
+    try std.io.getStdOut().writer().print(
+        \\Usage: catty [options] [file...]
+        \\
+        \\Options:
+        \\  -n,         Print line numbers
+        \\  -h, --help  Show this help
+        \\
+        \\If no file is provided, reads from stdin.
+        \\
+        \\Samples:
+        \\catty file_1.txt file_2.json
+        \\echo "hello world" | catty
+        \\catty --help
+    , .{});
 }
