@@ -68,12 +68,24 @@ pub fn main() !void {
         if (ignoreCase) {
             // yardımcı fonksiyon üzerinden arama yaptırılıyor
             if (containsCaseInsensitve(line, query)) {
-                try std.io.getStdOut().writer().print("{d}: {s}\n", .{ lineNumber, line });
+                try std.io.getStdOut().writer().print("{s}{d}:{s} {s}{s}\n", .{
+                    Colors.GREEN.toAnsiCode(),
+                    lineNumber,
+                    Colors.RESET.toAnsiCode(),
+                    Colors.CYAN.toAnsiCode(),
+                    line,
+                });
             }
         } else {
             // aksi durumda Case Sensitive arama söz konusu
             if (std.mem.indexOf(u8, line, query) != null) {
-                try std.io.getStdOut().writer().print("{d}: {s}\n", .{ lineNumber, line });
+                try std.io.getStdOut().writer().print("{s}{d}:{s} {s}{s}\n", .{
+                    Colors.GREEN.toAnsiCode(),
+                    lineNumber,
+                    Colors.RESET.toAnsiCode(),
+                    Colors.CYAN.toAnsiCode(),
+                    line,
+                });
             }
         }
         lineNumber += 1;
@@ -82,14 +94,21 @@ pub fn main() !void {
 
 fn printUsage() !void {
     try std.io.getStdOut().writer().print(
-        \\zgrep : A grep clone written in Zig
-        \\
-        \\Usages;
+        \\{s}zgrep : A grep clone written in Zig
+        \\{s}
+        \\{s}Usages;
         \\zgrep [-ics] <query> <file_path>
-        \\Arguments:
+        \\{s}
+        \\{s}Arguments:
         \\  -ics    : Ignore case sensitivity while searching (optional)
         \\
-    , .{});
+    , .{
+        Colors.YELLOW.toAnsiCode(),
+        Colors.RESET.toAnsiCode(),
+        Colors.CYAN.toAnsiCode(),
+        Colors.RESET.toAnsiCode(),
+        Colors.GREEN.toAnsiCode(),
+    });
 }
 
 // Bu yardımcı fonksiyon küçük büyük harf duyarlılığı geçersiz olduğunda devreye giriyor
@@ -106,3 +125,21 @@ fn containsCaseInsensitve(content: []const u8, searchTerm: []const u8) bool {
     }
     return false;
 }
+
+const Colors = enum {
+    RED,
+    GREEN,
+    YELLOW,
+    CYAN,
+    RESET,
+
+    pub fn toAnsiCode(self: Colors) []const u8 {
+        return switch (self) {
+            .RED => "\x1b[31m",
+            .GREEN => "\x1b[32m",
+            .YELLOW => "\x1b[33m",
+            .CYAN => "\x1b[36m",
+            .RESET => "\x1b[0m",
+        };
+    }
+};
