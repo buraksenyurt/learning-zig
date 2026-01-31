@@ -1,0 +1,19 @@
+Zig Programming Language
+
+Common Concepts
+
+Samples
+
+Sample 00
+
+This is a simple hello world program from Zig world.
+
+```Zig
+pub fn main() void {
+    std.debug.print("Hello world",.{});
+}
+```
+
+Sample 01
+
+End of the document.
