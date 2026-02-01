@@ -39,6 +39,13 @@ pub fn main() !void {
     defer directory.close();
 
     var iterator = directory.iterate();
+    var fileCount: usize = 0;
+    var totalFileSize: u64 = 0;
+
+    try printRepeat(stdout, '-', 80);
+    try stdout.print("\nListing of directory: {s}\n", .{targetFolder});
+    try printRepeat(stdout, '-', 80);
+    try stdout.print("\n", .{});
 
     while (try iterator.next()) |item| {
         if (!showHidden and item.name[0] == '.') continue;
@@ -56,6 +63,8 @@ pub fn main() !void {
                     metadata.size,
                     item.name,
                 });
+                fileCount += 1;
+                totalFileSize += metadata.size;
             } else if (item.kind == .directory) {
                 try stdout.print("{s:<17}   {s}\n", .{
                     "dir",
@@ -67,5 +76,19 @@ pub fn main() !void {
         }
     }
 
+    try printRepeat(stdout, '-', 80);
     try stdout.print("\n", .{});
+    if (longFormat) {
+        try stdout.print("{d:<5}files {d:>16} bytes\n", .{
+            fileCount,
+            totalFileSize,
+        });
+    }
+}
+
+fn printRepeat(writer: anytype, c: u8, count: usize) !void {
+    var i: usize = 0;
+    while (i < count) : (i += 1) {
+        try writer.writeByte(c);
+    }
 }
