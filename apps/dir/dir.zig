@@ -41,7 +41,30 @@ pub fn main() !void {
     var iterator = directory.iterate();
 
     while (try iterator.next()) |item| {
-        try stdout.print("{s} \n", .{item.name});
+        if (!showHidden and item.name[0] == '.') continue;
+        if (longFormat) {
+            if (item.kind == .file) {
+                const metadata = directory.statFile(item.name) catch |err| {
+                    try stdout.print("ERR {s} {s}\n", .{
+                        item.name,
+                        @errorName(err),
+                    });
+                    continue;
+                };
+                try stdout.print("{s:<8} {d: >10} {s}\n", .{
+                    "file",
+                    metadata.size,
+                    item.name,
+                });
+            } else if (item.kind == .directory) {
+                try stdout.print("{s:<17}   {s}\n", .{
+                    "dir",
+                    item.name,
+                });
+            }
+        } else {
+            try stdout.print("{s} \n", .{item.name});
+        }
     }
 
     try stdout.print("\n", .{});
