@@ -88,7 +88,18 @@ pub fn main() !void {
                 const value = parts.next(); // ondan sonraki ifade de value değerini işaret edecektir.
                 // İkisi de null değilse store'a ekleyebiliriz
                 if (key != null and value != null) {
-                    //todo@buraksenyurt Bu kısım tamamlanmalı
+                    // Store ekleme işinden önce key:value değerlerini heap üzerine alıyoruz.
+                    // Bunun için dupe komutu kullanılabilir. Bu komut, değerlerin koypalarını heap üzerinde oluşturr
+                    const keyCopy = try allocator.dupe(u8, key.?);
+                    const valCopy = try allocator.dupe(u8, value.?);
+
+                    // Peki ya key değeri varsa ne yapacağız?
+                    // store'a key ve value içeriklerinin kopyası eklenir
+                    try store.put(keyCopy, valCopy);
+                    // ve istemci tarafa işlemin olduğuna dair bir OK mesajı basılır
+                    try writer.print("OK\n", .{});
+                } else {
+                    try writer.print("ERROR: Usage SET <key> <value>\n", .{});
                 }
             } else if (std.mem.eql(u8, command, "GET")) {
                 // GET <key_name> komutu gelmişse
