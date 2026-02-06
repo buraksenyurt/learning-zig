@@ -79,10 +79,14 @@ pub fn main() !void {
             // Burada komutu okuyoruz
             const command = parts.first();
 
-            if (std.mem.eql(u8, command, "PING")) {
+            // Komutu büyük harfe dönüştür (case-insensitive karşılaştırma için)
+            var commandUpper: [16]u8 = undefined;
+            const upperCommand = std.ascii.upperString(&commandUpper, command);
+
+            if (std.mem.eql(u8, upperCommand, "PING")) {
                 // Eğer PING komutu gelmişse
                 try writer.print("PONG\n", .{}); // istemciye PONG cevabı veriyoruz ki bu bir klasiktir
-            } else if (std.mem.eql(u8, command, "SET")) {
+            } else if (std.mem.eql(u8, upperCommand, "SET")) {
                 // Eğer SET komutu gönderilmişse depoya bir key:value çifti eklenmek isteniyordur
                 const key = parts.next(); // iterasyonda sonraki ifade key değerini
                 const value = parts.next(); // ondan sonraki ifade de value değerini işaret edecektir.
@@ -101,7 +105,7 @@ pub fn main() !void {
                 } else {
                     try writer.print("ERROR: Usage SET <key> <value>\n", .{});
                 }
-            } else if (std.mem.eql(u8, command, "GET")) {
+            } else if (std.mem.eql(u8, upperCommand, "GET")) {
                 // GET <key_name> komutu gelmişse
                 const key = parts.next(); // istenen key değerini alıyoruz
                 if (key) |k| { // null değil ve bir değere sahipse
@@ -114,6 +118,10 @@ pub fn main() !void {
                         try writer.print("nil\n", .{});
                     }
                 }
+            } else {
+                // Bilinmeyen komut için hata mesajı gönderelir.
+                // Örneğin "bla bla" gibi bir komut gelirse "ERROR: Unknown command 'bla'" mesajı gönderilir
+                try writer.print("ERROR: Unknown command '{s}'\n", .{command});
             }
         }
     }

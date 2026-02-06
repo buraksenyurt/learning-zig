@@ -10,7 +10,7 @@ pub fn main() !void {
     // satır okurken allocator kullanımı da tercih edilebilir.
 
     // Burada da zedis sunucusuna bağlanmaya çalışıyoruz
-    const endpoint = try net.Address.parseIp("127.0.0.1", 7379);
+    const endpoint = try net.Address.parseIp("127.0.0.1", 7329);
     const stream = try net.tcpConnectToAddress(endpoint);
     defer stream.close();
 
@@ -31,7 +31,7 @@ pub fn main() !void {
 
     // Burası REPL döngüsü. Yani read evaluate print ve loop aşaması
     while (true) {
-        try stdout.print(">", .{});
+        try stdout.print("> ", .{});
         // Kullanıcının girdiği komutu input değişkenine okuyoruz
         // Altsatıra geçme karakterini görünceye kadar okuma  yapıyoruz
         const input = try stdin.readUntilDelimiterOrEof(&commandBuffer, '\n');
@@ -46,7 +46,7 @@ pub fn main() !void {
         // Bu kısım kritik.
         // Komutu zedis server'ına gönderiyoruz. Nasıl mı?
         // Writer stream'ini kullanıp doğrudan soket üzerine yazarak
-        try writer.print("{s}\n", .{input});
+        try writer.print("{s}\n", .{line});
 
         // ve tabii ki sunucu tarafından gelen cevabı alıyoruz
         // Burada sunucudan gelen cevabın tamamlanmasını beklemek için bir End Of File kontrolü var.
