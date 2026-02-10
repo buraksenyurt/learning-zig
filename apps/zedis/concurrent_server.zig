@@ -54,7 +54,7 @@ test "Concurrent server set and get" {
     var server = Server.init(allocator);
     defer server.deinit();
 
-    try server.set("default-port", "5329");
+    try server.set("default-port", "7329");
     try server.set("mode", "development");
 
     const val1 = server.get("default-port") orelse null;
@@ -64,9 +64,66 @@ test "Concurrent server set and get" {
 }
 
 fn handleClient(server: *Server, connection: net.Server.Connection) void {
-    _ = server;
-    _ = connection;
-    //todq@buraksenyurt
+    defer connection.stream.close();
+    const reader = connection.stream.reader();
+    const writer = connection.stream.writer();
+    var buffer: [1024]u8 = undefined;
+
+    while (true) {
+        const message = reader.readUntilDelimiterOrEof(&buffer, '\n') catch return;
+        const trimmedMsg = std.mem.trim(u8, message.?, "\r \t");
+
+        const line = std.mem.trim(u8, trimmedMsg, "\r \t");
+        var iterator = std.mem.splitScalar(u8, line, ' ');
+        const command = iterator.first();
+        var commandUpper: [16]u8 = undefined;
+        const upperCommand = std.ascii.upperString(&commandUpper, command);
+
+        if (std.mem.eql(u8, upperCommand, "SET")) {
+            const key = iterator.next();
+            const value = iterator.next();
+            if (key != null and value != null) {
+                server.set(key.?, value.?) catch {
+                    writer.print("ERR \n", .{}) catch {};
+                    continue;
+                };
+                writer.print("OK\n", .{}) catch {};
+            }
+        } else if (std.mem.eql(u8, upperCommand, "GET")) {
+            const key = iterator.next();
+            if (key) |k| {
+                if (server.get(k)) |value| {
+                    writer.print("{s}\n", .{value}) catch {};
+                } else {
+                    writer.print("(nil)\n", .{}) catch {};
+                }
+            }
+        } else if (std.mem.eql(u8, upperCommand, "PING")) {
+            writer.print("PONG\n", .{}) catch {};
+        } else {
+            writer.print("ERROR: Unknown command '{s}'\n", .{command}) catch {};
+        }
+    }
 }
 
-pub fn main() !void {}
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
+    var server = Server.init(allocator);
+    const address = try net.Address.parseIp("127.0.0.1", 7329);
+    var listener = try address.listen(.{ .kernel_backlog = 8 });
+    std.debug.print("Multi-thread zedis server running on 7329...", .{});
+
+    while (true) {
+        const connection = try listener.accept();
+
+        const thread = try std.Thread.spawn(
+            .{},
+            handleClient,
+            .{ &server, connection },
+        );
+
+        thread.detach();
+    }
+}
