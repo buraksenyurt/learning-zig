@@ -11,6 +11,7 @@
 const std = @import("std");
 const Cpu = @import("cpu.zig").Cpu;
 
+const ELAPSED_TIME_BETWEEN_INSTRUCTIONS = 2 * 1000 * 1000; // 2 ms
 pub fn main() !void {
     std.debug.print("CHIP-8 Emulator", .{});
     // CHIP-8 Rom dosyaları için https://github.com/loktar00/chip8/tree/master/roms adresine epey örnek var.
@@ -35,7 +36,7 @@ pub fn main() !void {
             });
         }
 
-        std.time.sleep(2 * 1000 * 1000);
+        std.time.sleep(ELAPSED_TIME_BETWEEN_INSTRUCTIONS);
         // 2 ms bekle. CHIP-8'de her komut yaklaşık 500 Hz hızında çalışmakta.
         // Bir başka deyişle her 2 mili saniyede bir komut çalıştırılır.
     }
