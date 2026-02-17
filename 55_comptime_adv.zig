@@ -6,39 +6,117 @@
 
 const std = @import("std");
 
+const Position = struct {
+    x: f32,
+    y: f32,
+};
+const Player = struct {
+    name: []const u8,
+    score: u32,
+    position: Position,
+};
+
 pub fn main() !void {
+    // Genel amaçlı bir allocator oluşturuyoruz. JSON string'ini heap'de oluşturacağız.
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-    const Position = struct {
-        x: f32,
-        y: f32,
+
+    const jerico = Player{
+        .name = "Jerico",
+        .score = 1500,
+        .position = Position{
+            .x = 10.5,
+            .y = 20.75,
+        },
     };
-    const myPosition = Position{
-        .x = 3.13,
-        .y = 10,
-    };
-    const jString = try stringfy(allocator, myPosition);
+    const jString = try stringfy(allocator, jerico);
     defer allocator.free(jString);
-    std.debug.print("{}\n", .{jString});
+    std.debug.print("{s}\n", .{jString});
+
+    // Birde array oluşturalım ve bunu JSON string'e dönüştürelim
+    const players = [_]Player{
+        Player{
+            .name = "Bacyo",
+            .score = 1500,
+            .position = Position{
+                .x = 10.5,
+                .y = 20.75,
+            },
+        },
+        Player{
+            .name = "Lokatelli",
+            .score = 2000,
+            .position = Position{
+                .x = 15.0,
+                .y = 25.0,
+            },
+        },
+    };
+    const pString = try stringfy(allocator, players);
+    defer allocator.free(pString);
+    std.debug.print("{s}\n", .{pString});
 }
 
-fn getValue(writer: anytype, value: anytype) !void {
+// Herhangibir zig değerini JSON string'e dönüştüren fonksiyon
+// anytype kullanarak herhangi bir türdeki değeri alabiliriz.
+// İlk parametre olarak bir allocator alırız çünkü JSON string'ini heap'de oluşturacağız.
+fn stringifyValue(writer: anytype, value: anytype) !void {
+    // tür bilgisini derleme zamanında alıyoruz
     const T = @TypeOf(value);
     const info = @typeInfo(T);
 
+    // Tür bilgisine göre JSON string'ini oluşturuyoruz
     switch (info) {
-        .Int, .Float => try writer.print("{d}", .{value}),
-        .Bool => try writer.print("{b}", .{value}),
-        .Null => try writer.print("null"),
-        else => @compileError("Unsupported type :" ++ @typeName(T)),
+        // primitive türlerde işimiz kolay
+        .int, .float => try writer.print("{d}", .{value}),
+        .bool => try writer.print("{b}", .{value}),
+        .null => try writer.print("null"),
+        // pointer aynı zamanda slice da olabilir.
+        // Yani fullName gibi []u8 türünden bir değeri de burada ele alabiliriz
+        .pointer => |ptr| {
+            if (ptr.size == .slice and ptr.child == u8) {
+                try writer.print("\"{s}\"", .{value});
+            } else if (ptr.size == .slice) {
+                try writer.writerAll("[");
+                for (value, 0..) |item, i| {
+                    if (i > 0) try writer.writeAll(",");
+                    try stringifyValue(writer, item); // recursive çağrı
+                }
+                try writer.writeAll("]");
+            }
+        },
+        // Burada ise struct türlerini ele alıyoruz.
+        // Reflection sayesinde struct'ın field'larında da dolaşabiliyoruz.
+        .@"struct" => |structInfo| {
+            try writer.writeAll("{");
+            inline for (structInfo.fields, 0..) |field, i| {
+                if (i > 0) try writer.writeAll(",");
+                try writer.print("\"{s}\":", .{field.name});
+                try stringifyValue(writer, @field(value, field.name));
+            }
+            try writer.writeAll("}");
+        },
+        // Bir array de söz konusu olabilir
+        .array => {
+            try writer.writeAll("[");
+            for (value, 0..) |item, i| {
+                if (i > 0) try writer.writeAll(",");
+                try stringifyValue(writer, item); // recursive çağrı
+            }
+            try writer.writeAll("]");
+        },
+        else => @compileError("Unsupported JSON type: " ++ @typeName(T)),
     }
 }
+
+// Bir üst soyutlama diyelim. stringifyValue'yu sarmalayarak herhangi bir değeri
+// JSON string'e dönüştürür
 fn stringfy(allocator: std.mem.Allocator, value: anytype) ![]u8 {
     var list = std.ArrayList(u8).init(allocator);
     errdefer list.deinit();
 
-    try getValue(list.writer(), value);
+    try stringifyValue(list.writer(), value);
 
     return list.toOwnedSlice();
 }
