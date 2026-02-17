@@ -58,6 +58,45 @@ pub const Cpu = struct {
             .setIndex => |addr| {
                 self.i = addr;
             },
+            .draw => |op| {
+                // DXYN komutu, Vx ve Vy register'larının belirttiği koordinatlardan başlayarak N byte'lık bir sprite çizer
+                // 64 ve 32 mod alma işlemleri yaparak ekranın sınırları içinde kalmasını sağlarız
+                // Zira ekran boyutu 64x32'dir ve koordinatlar bu sınırlar içinde olmalıdır.
+                const x_start = self.v[op.x] % 64;
+                const y_start = self.v[op.y] % 32;
+                const height = op.n; // Sprite'ın yüksekliği N byte olarak belirtilir
+
+                self.v[0xF] = 0; // 0xF register'ı çarpışma durumunu göstermek için kullanılır. Başlangıçta sıfırlanır.
+
+                // Bu döngü ile satır ve sütunlar dolaşılır ve sprite'ın her pikseli kontrol edilir.
+                // Sprite verisi, index register'ının (I) gösterdiği bellek adresinden başlayarak N byte'lık bir alanda bulunur.
+                var row: u16 = 0;
+                while (row < height) : (row += 1) {
+                    // Her satır için sprite verisi okunur
+                    const sprite_byte = self.memory[self.i + row];
+                    var col: u8 = 0;
+                    while (col < 8) : (col += 1) {
+                        // Burada da her sütun için sprite'ın ilgili bit'i kontrol edilir.
+                        if ((sprite_byte & (@as(u8, 0x80) >> @as(u3, @truncate(col)))) != 0) {
+                            const x = x_start + col;
+                            const y = y_start + row;
+
+                            if (x >= 64 or y >= 32) continue;
+
+                            // Ekranda bu pikselin mevcut durumunu kontrol ederiz.
+                            // Eğer zaten 1 ise bir çarpışma olduğunu gösteririz.
+                            const pixel_index = @as(usize, y) * 64 + @as(usize, x);
+
+                            if (self.gfx[pixel_index] == 1) self.v[0xF] = 1;
+
+                            // gfx[pixel_index] ^= 1; ifadesi, XOR işlemi yaparak pikselin durumunu değiştirir.
+                            // Eğer piksel 0 ise 1 yapar, eğer 1 ise 0 yapar.
+                            // Böylece sprite çizilirken piksel durumları güncellenir.
+                            self.gfx[pixel_index] ^= 1;
+                        }
+                    }
+                }
+            },
             .unknown => |raw| {
                 std.debug.print("Unknown Opcode: {X:0>4}\n", .{raw});
             },

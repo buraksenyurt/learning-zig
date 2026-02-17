@@ -13,6 +13,7 @@ pub const Instruction = union(enum) {
     setRegister: struct { x: u4, nn: u8 }, // 6XNN (Vx = NN) register'ı NN değeri ile günceller
     addImmediate: struct { x: u4, nn: u8 }, // 7XNN (Vx += NN) komutu, Vx register'ına NN değerini ekler
     setIndex: u16, // ANNN (I = NNN) komutu, index register'ını NNN değeri ile günceller
+    draw: struct { x: u4, y: u4, n: u4 }, // DXYN komutu, Vx ve Vy register'larının belirttiği koordinatlardan başlayarak N byte'lık sprite'ı çizer
     unknown: u16,
 };
 
@@ -21,7 +22,8 @@ pub fn decode(opCode: u16) Instruction {
     const nnn = opCode & 0x0FFF; // nnn değeri, opcode'un son 12 bit'ini temsil eder
     const nn = @as(u8, @truncate(opCode & 0x00FF)); // nn değeri, opcode'un son 8 bit'ini temsil eder
     const x = @as(u4, @truncate((opCode & 0x0F00) >> 8)); // x değeri, opcode'un 8-11 bit'lerini temsil eder (register index'i)
-
+    const y = @as(u4, @truncate((opCode & 0x00F0) >> 4)); // y değeri, opcode'un 4-7 bit'lerini temsil eder (register index'i)
+    const n = @as(u4, @truncate(opCode & 0x000F)); // n değeri, opcode'un son 4 bit'ini temsil eder
     // opcode'un ilk 4 bit'ine göre hangi komutun söz konusu olduğu belirlenir
     return switch (opCode & 0xF000) {
         // 0x0000 ile başlayan opcode'lar genellikle özel komutları temsil eder
@@ -47,6 +49,14 @@ pub fn decode(opCode: u16) Instruction {
         } },
         // 0xA000 ile başlayan opcode'lar genellikle index register'ını güncelleme komutlarını temsil eder
         0xA000 => .{ .setIndex = nnn },
+        // 0xD000 ile başlayan opcode'lar genellikle sprite çizme komutlarını temsil eder
+        0xD000 => .{
+            .draw = .{
+                .x = x,
+                .y = y,
+                .n = n,
+            },
+        },
         else => .{ .unknown = opCode },
     };
 }
