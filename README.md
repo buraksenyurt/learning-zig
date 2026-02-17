@@ -76,6 +76,9 @@ zig test tests.zig
 - **comptime** keyword ile işartlemmiş değişkenler, fonksiyon parametreleri ve expression'lar tanımlanabilir. Eğer bir değişken **comptime** olarak tanımlanmışsa, bu değişkenin sadece derleme zamanında yüklenip kullanılacağı belirtilmiş olur.
 - **block** lar bir ifade (expression) olarak kullanılabilir ve değer döndürebilir. Bunun için bloğun isimlendirilmiş olması *(labeling)* gerekir. Daha sonra bu bloğun içerisinde **break** ifadesi ile bloğun sonucu döndürülebilir.  
 - **if** bloklarında Conditional Binding yapılabilir. Yani değeri olan veya null olarak ifade edilen bir veriyi koşullu ifadeye alabilir, | operatörü ile if, else if bloklarında bu değere erişebiliriz.
+- Zig'in ayrıca bir C derleyicisi olduğu ifade ediliyor. Bu nedenle Zig kodlarından C fonksiyonlarını doğrudan çağırmak mümkün ve oldukça kolay. **@cImport** ile **C header** dosyalarını Zig'e dahil etmek ve ardından bu header dosyasında tanımlanan fonksiyonları Zig kodu içerisinde kullanmak mümkün.
+
+```zig
 
 ## Kaynaklar
 
