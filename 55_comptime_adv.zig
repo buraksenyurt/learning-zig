@@ -56,6 +56,12 @@ pub fn main() !void {
     const pString = try stringfy(allocator, players);
     defer allocator.free(pString);
     std.debug.print("{s}\n", .{pString});
+
+    // Birde optional tür kullanımına bakalım
+    const maybePlayer: ?Player = null;
+    const mpString = try stringfy(allocator, maybePlayer);
+    defer allocator.free(mpString);
+    std.debug.print("{s}\n", .{mpString});
 }
 
 // Herhangibir zig değerini JSON string'e dönüştüren fonksiyon
@@ -105,6 +111,13 @@ fn stringifyValue(writer: anytype, value: anytype) !void {
                 try stringifyValue(writer, item); // recursive çağrı
             }
             try writer.writeAll("]");
+        },
+        .optional => { // Optional türleri ele alıyoruz
+            if (value) |v| {
+                try stringifyValue(writer, v);
+            } else {
+                try writer.writeAll("null");
+            }
         },
         else => @compileError("Unsupported JSON type: " ++ @typeName(T)),
     }
