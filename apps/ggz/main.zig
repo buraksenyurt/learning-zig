@@ -2,7 +2,8 @@ const c = @cImport({
     @cInclude("SDL3/SDL.h");
 });
 const std = @import("std");
-const Rect = @import("shape.zig").Rect;
+const Shape = @import("shape.zig");
+const Color = @import("palette.zig").BaseColor;
 
 pub fn main() !void {
     if (!c.SDL_Init(c.SDL_INIT_VIDEO)) {
@@ -31,18 +32,17 @@ pub fn main() !void {
     var quit = false;
     var event: c.SDL_Event = undefined;
 
-    const rect = Rect.new(
+    var rect = Shape.Rect.new(
         100,
         100,
         200,
         150,
-        c.SDL_Color{
-            .r = 255,
-            .g = 0,
-            .b = 0,
-            .a = 255,
-        },
+        Color.Blue,
     );
+    const square1 = Shape.GetSizedSquare(50, 50, Shape.MicroSquareType.Small, Color.Yellow);
+    const square2 = Shape.GetSizedSquare(60, 60, Shape.MicroSquareType.Medium, Color.White);
+    const square3 = Shape.GetSizedSquare(70, 70, Shape.MicroSquareType.Large, Color.Magenta);
+    var growing = true;
 
     while (!quit) {
         while (c.SDL_PollEvent(&event)) {
@@ -57,7 +57,19 @@ pub fn main() !void {
 
         _ = c.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         _ = c.SDL_RenderClear(renderer);
+
+        if (growing) {
+            rect = rect.increase(1);
+            if (rect.width > 300) growing = false;
+        } else {
+            rect = rect.decrease(1);
+            if (rect.width < 200) growing = true;
+        }
+
         rect.draw(renderer);
+        square1.draw(renderer);
+        square2.draw(renderer);
+        square3.draw(renderer);
         _ = c.SDL_RenderPresent(renderer);
 
         c.SDL_Delay(16);
