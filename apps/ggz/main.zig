@@ -39,10 +39,14 @@ pub fn main() !void {
         150,
         Color.Blue,
     );
+    var rectGrowing = true;
+
     const square1 = Shape.GetSizedSquare(50, 50, Shape.MicroSquareType.Small, Color.Yellow);
     const square2 = Shape.GetSizedSquare(60, 60, Shape.MicroSquareType.Medium, Color.White);
     const square3 = Shape.GetSizedSquare(70, 70, Shape.MicroSquareType.Large, Color.Magenta);
-    var growing = true;
+
+    var circle = Shape.Circle.new(400, 300, 30, Color.Red);
+    var circleGrowing = true;
 
     while (!quit) {
         while (c.SDL_PollEvent(&event)) {
@@ -58,18 +62,26 @@ pub fn main() !void {
         _ = c.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         _ = c.SDL_RenderClear(renderer);
 
-        if (growing) {
+        if (rectGrowing) {
             rect = rect.increase(1);
-            if (rect.width > 300) growing = false;
+            if (rect.width > 300) rectGrowing = false;
         } else {
             rect = rect.decrease(1);
-            if (rect.width < 200) growing = true;
+            if (rect.width < 200) rectGrowing = true;
         }
 
         rect.draw(renderer);
         square1.draw(renderer);
         square2.draw(renderer);
         square3.draw(renderer);
+        if (circleGrowing) {
+            circle = circle.increase(1);
+            if (circle.radius > 100) circleGrowing = false;
+        } else {
+            circle = circle.decrease(1);
+            if (circle.radius < 50) circleGrowing = true;
+        }
+        circle.draw(renderer);
         _ = c.SDL_RenderPresent(renderer);
 
         c.SDL_Delay(16);
