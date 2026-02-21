@@ -129,3 +129,83 @@ pub const Circle = struct {
         return self.increase(-amount);
     }
 };
+
+pub const Line = struct {
+    startX: i32,
+    startY: i32,
+    endX: i32,
+    endY: i32,
+    color: c.SDL_Color,
+    pub fn new(startX: i32, startY: i32, endX: i32, endY: i32, color: palette.BaseColor) @This() {
+        return .{
+            .startX = startX,
+            .startY = startY,
+            .endX = endX,
+            .endY = endY,
+            .color = palette.GetColor(color),
+        };
+    }
+
+    pub fn draw(self: @This(), renderer: *c.SDL_Renderer) void {
+        _ = c.SDL_SetRenderDrawColor(
+            renderer,
+            self.color.r,
+            self.color.g,
+            self.color.b,
+            self.color.a,
+        );
+        _ = c.SDL_RenderLine(
+            renderer,
+            @as(f32, @floatFromInt(self.startX)),
+            @as(f32, @floatFromInt(self.startY)),
+            @as(f32, @floatFromInt(self.endX)),
+            @as(f32, @floatFromInt(self.endY)),
+        );
+    }
+};
+
+pub const LineType = enum {
+    Thin,
+    Medium,
+    Bold,
+};
+
+pub fn GetSizedLine(startX: i32, startY: i32, endX: i32, endY: i32, lineType: LineType, color: palette.BaseColor) Line {
+    switch (lineType) {
+        LineType.Thin => return Line.new(startX, startY, endX, endY, color),
+        LineType.Medium => return Line.new(startX, startY + 1, endX, endY + 1, color),
+        LineType.Bold => return Line.new(startX, startY + 2, endX, endY + 2, color),
+    }
+}
+
+pub const FilledRect = struct {
+    rect: Rect,
+    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.BaseColor) @This() {
+        return .{
+            .rect = Rect.new(
+                x,
+                y,
+                width,
+                height,
+                color,
+            ),
+        };
+    }
+
+    pub fn draw(self: @This(), renderer: *c.SDL_Renderer) void {
+        var rect = c.SDL_FRect{
+            .x = @floatFromInt(self.rect.x),
+            .y = @floatFromInt(self.rect.y),
+            .w = @floatFromInt(self.rect.width),
+            .h = @floatFromInt(self.rect.height),
+        };
+        _ = c.SDL_SetRenderDrawColor(
+            renderer,
+            self.rect.color.r,
+            self.rect.color.g,
+            self.rect.color.b,
+            self.rect.color.a,
+        );
+        _ = c.SDL_RenderFillRect(renderer, &rect);
+    }
+};

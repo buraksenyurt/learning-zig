@@ -41,12 +41,60 @@ pub fn main() !void {
     );
     var rectGrowing = true;
 
-    const square1 = Shape.GetSizedSquare(50, 50, Shape.MicroSquareType.Small, Color.Yellow);
-    const square2 = Shape.GetSizedSquare(60, 60, Shape.MicroSquareType.Medium, Color.White);
-    const square3 = Shape.GetSizedSquare(70, 70, Shape.MicroSquareType.Large, Color.Magenta);
+    const square1 = Shape.GetSizedSquare(
+        50,
+        50,
+        Shape.MicroSquareType.Small,
+        Color.Yellow,
+    );
+    const square2 = Shape.GetSizedSquare(
+        60,
+        60,
+        Shape.MicroSquareType.Medium,
+        Color.White,
+    );
+    const square3 = Shape.GetSizedSquare(
+        70,
+        70,
+        Shape.MicroSquareType.Large,
+        Color.Magenta,
+    );
 
     var circle = Shape.Circle.new(400, 300, 30, Color.Red);
     var circleGrowing = true;
+
+    const thinLine = Shape.GetSizedLine(
+        200,
+        500,
+        600,
+        500,
+        Shape.LineType.Thin,
+        Color.Gray,
+    );
+    const boldLine = Shape.GetSizedLine(
+        200,
+        550,
+        600,
+        550,
+        Shape.LineType.Bold,
+        Color.Cyan,
+    );
+    const verticalLine = Shape.GetSizedLine(
+        400,
+        100,
+        400,
+        500,
+        Shape.LineType.Medium,
+        Color.Yellow,
+    );
+
+    const filledRect = Shape.FilledRect.new(
+        500,
+        100,
+        150,
+        100,
+        Color.Yellow,
+    );
 
     while (!quit) {
         while (c.SDL_PollEvent(&event)) {
@@ -82,6 +130,11 @@ pub fn main() !void {
             if (circle.radius < 50) circleGrowing = true;
         }
         circle.draw(renderer);
+        thinLine.draw(renderer);
+        boldLine.draw(renderer);
+        verticalLine.draw(renderer);
+        filledRect.draw(renderer);
+
         _ = c.SDL_RenderPresent(renderer);
 
         c.SDL_Delay(16);

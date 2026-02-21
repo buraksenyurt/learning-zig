@@ -5,12 +5,13 @@ const c = @cImport({
 
 pub const BaseColor = enum {
     Black,
-    Red,
-    Green,
-    Yellow,
     Blue,
-    Magenta,
     Cyan,
+    Gray,
+    Green,
+    Magenta,
+    Red,
+    Yellow,
     White,
 };
 
@@ -24,5 +25,6 @@ pub fn GetColor(color: BaseColor) c.SDL_Color {
         .Magenta => c.SDL_Color{ .r = 255, .g = 0, .b = 255, .a = 255 },
         .Cyan => c.SDL_Color{ .r = 0, .g = 255, .b = 255, .a = 255 },
         .White => c.SDL_Color{ .r = 255, .g = 255, .b = 255, .a = 255 },
+        .Gray => c.SDL_Color{ .r = 128, .g = 128, .b = 128, .a = 255 },
     };
 }
