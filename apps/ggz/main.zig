@@ -38,7 +38,8 @@ pub fn main() !void {
         100,
         200,
         150,
-        Color.fromBaseColor(BaseColor.Red, 255),
+        Color.fromBaseColor(BaseColor.Red, 100),
+        Shape.ShapeKind.Normal,
     );
     var rectGrowing = true;
 
@@ -46,13 +47,13 @@ pub fn main() !void {
         50,
         50,
         Shape.MicroSquareType.Small,
-        Color.fromBaseColor(BaseColor.Yellow, 255),
+        Color.fromBaseColor(BaseColor.Yellow, 100),
     );
     const square2 = Shape.GetSizedSquare(
         60,
         60,
         Shape.MicroSquareType.Medium,
-        Color.fromBaseColor(BaseColor.White, 255),
+        Color.fromBaseColor(BaseColor.White, 100),
     );
     const square3 = Shape.GetSizedSquare(
         70,
@@ -70,7 +71,8 @@ pub fn main() !void {
         400,
         300,
         30,
-        Color.fromBaseColor(BaseColor.Red, 255),
+        Color.fromBaseColor(BaseColor.Red, 25),
+        Shape.ShapeKind.Filled,
     );
     var circleGrowing = true;
 
@@ -80,7 +82,7 @@ pub fn main() !void {
         600,
         500,
         Shape.LineType.Thin,
-        Color.fromBaseColor(BaseColor.Gray, 255),
+        Color.fromBaseColor(BaseColor.Gray, 100),
     );
     const boldLine = Shape.GetSizedLine(
         200,
@@ -99,12 +101,13 @@ pub fn main() !void {
         Color.fromBaseColor(BaseColor.Yellow, 255),
     );
 
-    const filledRect = Shape.FilledRect.new(
+    const filledRect = Shape.Rect.new(
         500,
         100,
         150,
         100,
         Color.fromBaseColor(BaseColor.Yellow, 255),
+        Shape.ShapeKind.Filled,
     );
 
     while (!quit) {

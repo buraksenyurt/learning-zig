@@ -3,19 +3,26 @@ const c = @cImport({
 });
 const palette = @import("palette.zig");
 
+pub const ShapeKind = enum {
+    Normal,
+    Filled,
+};
+
 pub const Rect = struct {
     x: i32,
     y: i32,
     width: i32,
     height: i32,
     color: palette.Color,
-    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.Color) @This() {
+    shapeKind: ShapeKind = ShapeKind.Normal,
+    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.Color, shapeKind: ShapeKind) @This() {
         return .{
             .x = x,
             .y = y,
             .width = width,
             .height = height,
             .color = color,
+            .shapeKind = shapeKind,
         };
     }
 
@@ -33,7 +40,10 @@ pub const Rect = struct {
             self.color.b,
             self.color.a,
         );
-        _ = c.SDL_RenderRect(renderer, &rect);
+        switch (self.shapeKind) {
+            ShapeKind.Normal => _ = c.SDL_RenderRect(renderer, &rect),
+            ShapeKind.Filled => _ = c.SDL_RenderFillRect(renderer, &rect),
+        }
     }
 
     pub fn increase(self: @This(), amount: i32) Rect {
@@ -43,6 +53,7 @@ pub const Rect = struct {
             .width = self.width + 2 * amount,
             .height = self.height + 2 * amount,
             .color = self.color,
+            .shapeKind = self.shapeKind,
         };
     }
 
@@ -59,9 +70,30 @@ pub const MicroSquareType = enum {
 
 pub fn GetSizedSquare(x: i32, y: i32, squareType: MicroSquareType, color: palette.Color) Rect {
     switch (squareType) {
-        MicroSquareType.Small => return Rect.new(x, y, 16, 16, color),
-        MicroSquareType.Medium => return Rect.new(x, y, 32, 32, color),
-        MicroSquareType.Large => return Rect.new(x, y, 64, 64, color),
+        MicroSquareType.Small => return Rect.new(
+            x,
+            y,
+            16,
+            16,
+            color,
+            ShapeKind.Normal,
+        ),
+        MicroSquareType.Medium => return Rect.new(
+            x,
+            y,
+            32,
+            32,
+            color,
+            ShapeKind.Normal,
+        ),
+        MicroSquareType.Large => return Rect.new(
+            x,
+            y,
+            64,
+            64,
+            color,
+            ShapeKind.Normal,
+        ),
     }
 }
 
@@ -70,16 +102,26 @@ pub const Circle = struct {
     centerY: i32,
     radius: i32,
     color: palette.Color,
-    pub fn new(centerX: i32, centerY: i32, radius: i32, color: palette.Color) @This() {
+    shapeKind: ShapeKind = ShapeKind.Normal,
+    pub fn new(centerX: i32, centerY: i32, radius: i32, color: palette.Color, shapeKind: ShapeKind) @This() {
         return .{
             .centerX = centerX,
             .centerY = centerY,
             .radius = radius,
             .color = color,
+            .shapeKind = shapeKind,
         };
     }
 
     pub fn draw(self: @This(), renderer: *c.SDL_Renderer) void {
+        _ = c.SDL_SetRenderDrawColor(
+            renderer,
+            self.color.r,
+            self.color.g,
+            self.color.b,
+            self.color.a,
+        );
+
         var x: i32 = self.radius - 1;
         var y: i32 = 0;
         var dx: i32 = 1;
@@ -87,21 +129,24 @@ pub const Circle = struct {
         var err: i32 = dx - (self.radius << 1);
 
         while (x >= y) {
-            _ = c.SDL_SetRenderDrawColor(
-                renderer,
-                self.color.r,
-                self.color.g,
-                self.color.b,
-                self.color.a,
-            );
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + x)), @as(f32, @floatFromInt(self.centerY + y)));
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + y)), @as(f32, @floatFromInt(self.centerY + x)));
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - y)), @as(f32, @floatFromInt(self.centerY + x)));
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - x)), @as(f32, @floatFromInt(self.centerY + y)));
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - x)), @as(f32, @floatFromInt(self.centerY - y)));
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - y)), @as(f32, @floatFromInt(self.centerY - x)));
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + y)), @as(f32, @floatFromInt(self.centerY - x)));
-            _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + x)), @as(f32, @floatFromInt(self.centerY - y)));
+            switch (self.shapeKind) {
+                ShapeKind.Normal => {
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + x)), @as(f32, @floatFromInt(self.centerY + y)));
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + y)), @as(f32, @floatFromInt(self.centerY + x)));
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - y)), @as(f32, @floatFromInt(self.centerY + x)));
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - x)), @as(f32, @floatFromInt(self.centerY + y)));
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - x)), @as(f32, @floatFromInt(self.centerY - y)));
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX - y)), @as(f32, @floatFromInt(self.centerY - x)));
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + y)), @as(f32, @floatFromInt(self.centerY - x)));
+                    _ = c.SDL_RenderPoint(renderer, @as(f32, @floatFromInt(self.centerX + x)), @as(f32, @floatFromInt(self.centerY - y)));
+                },
+                ShapeKind.Filled => {
+                    _ = c.SDL_RenderLine(renderer, @as(f32, @floatFromInt(self.centerX - x)), @as(f32, @floatFromInt(self.centerY + y)), @as(f32, @floatFromInt(self.centerX + x)), @as(f32, @floatFromInt(self.centerY + y)));
+                    _ = c.SDL_RenderLine(renderer, @as(f32, @floatFromInt(self.centerX - x)), @as(f32, @floatFromInt(self.centerY - y)), @as(f32, @floatFromInt(self.centerX + x)), @as(f32, @floatFromInt(self.centerY - y)));
+                    _ = c.SDL_RenderLine(renderer, @as(f32, @floatFromInt(self.centerX - y)), @as(f32, @floatFromInt(self.centerY + x)), @as(f32, @floatFromInt(self.centerX + y)), @as(f32, @floatFromInt(self.centerY + x)));
+                    _ = c.SDL_RenderLine(renderer, @as(f32, @floatFromInt(self.centerX - y)), @as(f32, @floatFromInt(self.centerY - x)), @as(f32, @floatFromInt(self.centerX + y)), @as(f32, @floatFromInt(self.centerY - x)));
+                },
+            }
 
             if (err <= 0) {
                 y += 1;
@@ -122,6 +167,7 @@ pub const Circle = struct {
             .centerY = self.centerY,
             .radius = self.radius + amount,
             .color = self.color,
+            .shapeKind = self.shapeKind,
         };
     }
 
@@ -177,35 +223,3 @@ pub fn GetSizedLine(startX: i32, startY: i32, endX: i32, endY: i32, lineType: Li
         LineType.Bold => return Line.new(startX, startY + 2, endX, endY + 2, color),
     }
 }
-
-pub const FilledRect = struct {
-    rect: Rect,
-    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.Color) @This() {
-        return .{
-            .rect = Rect.new(
-                x,
-                y,
-                width,
-                height,
-                color,
-            ),
-        };
-    }
-
-    pub fn draw(self: @This(), renderer: *c.SDL_Renderer) void {
-        var rect = c.SDL_FRect{
-            .x = @floatFromInt(self.rect.x),
-            .y = @floatFromInt(self.rect.y),
-            .w = @floatFromInt(self.rect.width),
-            .h = @floatFromInt(self.rect.height),
-        };
-        _ = c.SDL_SetRenderDrawColor(
-            renderer,
-            self.rect.color.r,
-            self.rect.color.g,
-            self.rect.color.b,
-            self.rect.color.a,
-        );
-        _ = c.SDL_RenderFillRect(renderer, &rect);
-    }
-};
