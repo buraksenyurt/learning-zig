@@ -16,8 +16,8 @@ pub const Color = struct {
             .a = a,
         };
     }
-    pub fn fromBaseColor(baseColor: BaseColor, transparency: u8) Color {
-        const sdlColor = GetColor(baseColor, transparency);
+    pub fn fromBaseColor(baseColor: BaseColor, options: struct { transparency: u8 = 255 }) Color {
+        const sdlColor = GetColor(baseColor, options.transparency);
         return Color{
             .r = sdlColor.r,
             .g = sdlColor.g,
