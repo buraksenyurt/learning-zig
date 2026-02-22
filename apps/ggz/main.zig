@@ -3,7 +3,8 @@ const c = @cImport({
 });
 const std = @import("std");
 const Shape = @import("shape.zig");
-const Color = @import("palette.zig").BaseColor;
+const Color = @import("palette.zig").Color;
+const BaseColor = @import("palette.zig").BaseColor;
 
 pub fn main() !void {
     if (!c.SDL_Init(c.SDL_INIT_VIDEO)) {
@@ -37,7 +38,7 @@ pub fn main() !void {
         100,
         200,
         150,
-        Color.Blue,
+        Color.fromBaseColor(BaseColor.Red, 255),
     );
     var rectGrowing = true;
 
@@ -45,22 +46,32 @@ pub fn main() !void {
         50,
         50,
         Shape.MicroSquareType.Small,
-        Color.Yellow,
+        Color.fromBaseColor(BaseColor.Yellow, 255),
     );
     const square2 = Shape.GetSizedSquare(
         60,
         60,
         Shape.MicroSquareType.Medium,
-        Color.White,
+        Color.fromBaseColor(BaseColor.White, 255),
     );
     const square3 = Shape.GetSizedSquare(
         70,
         70,
         Shape.MicroSquareType.Large,
-        Color.Magenta,
+        Color.new(
+            50,
+            50,
+            255,
+            100,
+        ),
     );
 
-    var circle = Shape.Circle.new(400, 300, 30, Color.Red);
+    var circle = Shape.Circle.new(
+        400,
+        300,
+        30,
+        Color.fromBaseColor(BaseColor.Red, 255),
+    );
     var circleGrowing = true;
 
     const thinLine = Shape.GetSizedLine(
@@ -69,7 +80,7 @@ pub fn main() !void {
         600,
         500,
         Shape.LineType.Thin,
-        Color.Gray,
+        Color.fromBaseColor(BaseColor.Gray, 255),
     );
     const boldLine = Shape.GetSizedLine(
         200,
@@ -77,7 +88,7 @@ pub fn main() !void {
         600,
         550,
         Shape.LineType.Bold,
-        Color.Cyan,
+        Color.fromBaseColor(BaseColor.Cyan, 255),
     );
     const verticalLine = Shape.GetSizedLine(
         400,
@@ -85,7 +96,7 @@ pub fn main() !void {
         400,
         500,
         Shape.LineType.Medium,
-        Color.Yellow,
+        Color.fromBaseColor(BaseColor.Yellow, 255),
     );
 
     const filledRect = Shape.FilledRect.new(
@@ -93,7 +104,7 @@ pub fn main() !void {
         100,
         150,
         100,
-        Color.Yellow,
+        Color.fromBaseColor(BaseColor.Yellow, 255),
     );
 
     while (!quit) {

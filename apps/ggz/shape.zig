@@ -8,14 +8,14 @@ pub const Rect = struct {
     y: i32,
     width: i32,
     height: i32,
-    color: c.SDL_Color,
-    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.BaseColor) @This() {
+    color: palette.Color,
+    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.Color) @This() {
         return .{
             .x = x,
             .y = y,
             .width = width,
             .height = height,
-            .color = palette.GetColor(color),
+            .color = color,
         };
     }
 
@@ -57,7 +57,7 @@ pub const MicroSquareType = enum {
     Large,
 };
 
-pub fn GetSizedSquare(x: i32, y: i32, squareType: MicroSquareType, color: palette.BaseColor) Rect {
+pub fn GetSizedSquare(x: i32, y: i32, squareType: MicroSquareType, color: palette.Color) Rect {
     switch (squareType) {
         MicroSquareType.Small => return Rect.new(x, y, 16, 16, color),
         MicroSquareType.Medium => return Rect.new(x, y, 32, 32, color),
@@ -69,13 +69,13 @@ pub const Circle = struct {
     centerX: i32,
     centerY: i32,
     radius: i32,
-    color: c.SDL_Color,
-    pub fn new(centerX: i32, centerY: i32, radius: i32, color: palette.BaseColor) @This() {
+    color: palette.Color,
+    pub fn new(centerX: i32, centerY: i32, radius: i32, color: palette.Color) @This() {
         return .{
             .centerX = centerX,
             .centerY = centerY,
             .radius = radius,
-            .color = palette.GetColor(color),
+            .color = color,
         };
     }
 
@@ -135,14 +135,14 @@ pub const Line = struct {
     startY: i32,
     endX: i32,
     endY: i32,
-    color: c.SDL_Color,
-    pub fn new(startX: i32, startY: i32, endX: i32, endY: i32, color: palette.BaseColor) @This() {
+    color: palette.Color,
+    pub fn new(startX: i32, startY: i32, endX: i32, endY: i32, color: palette.Color) @This() {
         return .{
             .startX = startX,
             .startY = startY,
             .endX = endX,
             .endY = endY,
-            .color = palette.GetColor(color),
+            .color = color,
         };
     }
 
@@ -170,7 +170,7 @@ pub const LineType = enum {
     Bold,
 };
 
-pub fn GetSizedLine(startX: i32, startY: i32, endX: i32, endY: i32, lineType: LineType, color: palette.BaseColor) Line {
+pub fn GetSizedLine(startX: i32, startY: i32, endX: i32, endY: i32, lineType: LineType, color: palette.Color) Line {
     switch (lineType) {
         LineType.Thin => return Line.new(startX, startY, endX, endY, color),
         LineType.Medium => return Line.new(startX, startY + 1, endX, endY + 1, color),
@@ -180,7 +180,7 @@ pub fn GetSizedLine(startX: i32, startY: i32, endX: i32, endY: i32, lineType: Li
 
 pub const FilledRect = struct {
     rect: Rect,
-    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.BaseColor) @This() {
+    pub fn new(x: i32, y: i32, width: i32, height: i32, color: palette.Color) @This() {
         return .{
             .rect = Rect.new(
                 x,
