@@ -1,6 +1,6 @@
 const std = @import("std");
 const models = @import("models.zig");
-fn parseVersion(versionStr: []const u8) !models.version {
+pub fn parseVersion(versionStr: []const u8) !models.version {
     var parts = std.mem.splitSequence(
         u8,
         versionStr,
@@ -30,6 +30,15 @@ fn parseVersion(versionStr: []const u8) !models.version {
         .minor = minor orelse 0,
         .revision = revision orelse 0,
     };
+}
+
+pub fn readFileContent(allocator: std.mem.Allocator, filePath: []const u8) ![]u8 {
+    const file = try std.fs.cwd().openFile(filePath, .{ .mode = .read_only });
+    defer file.close();
+
+    const fileSize = (try file.metadata()).size();
+    const content = try file.readToEndAlloc(allocator, fileSize);
+    return content;
 }
 
 test "parseVersion parses partial versions with defaults" {

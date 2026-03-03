@@ -43,4 +43,21 @@ pub const service = struct {
     network: std.ArrayList(network),
     technologyStack: std.ArrayList([]const u8),
     dependencies: std.ArrayList([]const u8),
+
+    pub fn init(allocator: std.mem.Allocator) @This() {
+        return .{
+            .serviceName = "",
+            .version = version{ .major = 0, .minor = 0, .revision = 0 },
+            .domain = "",
+            .network = std.ArrayList(network).init(allocator),
+            .technologyStack = std.ArrayList([]const u8).init(allocator),
+            .dependencies = std.ArrayList([]const u8).init(allocator),
+        };
+    }
+
+    pub fn deinit(self: @This()) void {
+        self.network.deinit();
+        self.technologyStack.deinit();
+        self.dependencies.deinit();
+    }
 };
