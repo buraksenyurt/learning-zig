@@ -1,0 +1,13 @@
+service_name: cache-service
+version: 2.0.0
+domain: infrastructure/cache
+network:
+  - protocol: gRPC
+    host: 10.0.0.10
+    port: 50155
+    environment: production
+technology_stack:
+  - Rust 1.80
+dependencies:
+  - config-service
+  - metrics-service

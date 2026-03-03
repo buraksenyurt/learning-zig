@@ -1,0 +1,19 @@
+service_name: api-gateway
+version: 5.1.0
+domain: infrastructure/gateway
+network:
+  - protocol: http
+    host: 10.0.0.1
+    port: 80
+    environment: test
+  - protocol: https
+    host: 10.0.0.1
+    port: 443
+    environment: production
+technology_stack:
+  - Go 1.22
+dependencies:
+  - rate-limiter-service
+  - auth-service
+  - service-discovery
+  - audit-log-service
