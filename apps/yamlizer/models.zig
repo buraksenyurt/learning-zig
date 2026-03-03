@@ -21,12 +21,48 @@ pub const Protocol = enum {
     Http,
     Https,
     Grpc,
+    pub fn toString(self: @This()) []const u8 {
+        return switch (self) {
+            .Http => "HTTP",
+            .Https => "HTTPS",
+            .Grpc => "gRPC",
+        };
+    }
+    pub fn fromString(protocolStr: []const u8) ?@This() {
+        if (std.ascii.eqlIgnoreCase(protocolStr, "grpc")) {
+            return .Grpc;
+        } else if (std.ascii.eqlIgnoreCase(protocolStr, "https")) {
+            return .Https;
+        } else if (std.ascii.eqlIgnoreCase(protocolStr, "http")) {
+            return .Http;
+        } else {
+            return null;
+        }
+    }
 };
 
 pub const Environment = enum {
     Development,
     Test,
     Production,
+    pub fn toString(self: @This()) []const u8 {
+        return switch (self) {
+            .Development => "Development",
+            .Test => "Test",
+            .Production => "Production",
+        };
+    }
+    pub fn fromString(envStr: []const u8) ?@This() {
+        if (std.mem.startsWith(u8, envStr, "Development")) {
+            return .Development;
+        } else if (std.mem.startsWith(u8, envStr, "Test")) {
+            return .Test;
+        } else if (std.mem.startsWith(u8, envStr, "Production")) {
+            return .Production;
+        } else {
+            return null;
+        }
+    }
 };
 
 pub const network = struct {
