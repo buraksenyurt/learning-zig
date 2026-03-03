@@ -8,6 +8,8 @@ network:
     environment: production
 technology_stack:
   - Rust 1.80
+  - Redis 7.0
+  - Docker
 dependencies:
   - config-service
   - metrics-service

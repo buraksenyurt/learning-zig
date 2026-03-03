@@ -15,8 +15,13 @@ pub fn deserialize(filePath: []const u8) !models.service {
         content,
         "\r\n",
     );
+    var pending_line: ?[]const u8 = null;
 
-    while (lines.next()) |line| {
+    while (true) {
+        const line = if (pending_line) |pl| blk: {
+            pending_line = null;
+            break :blk pl;
+        } else (lines.next() orelse break);
         const trimmedLine = std.mem.trim(
             u8,
             line,
@@ -55,7 +60,10 @@ pub fn deserialize(filePath: []const u8) !models.service {
                 const trimmedNetworkLine = std.mem.trim(u8, networkLine, LINE_ENDING);
                 if (trimmedNetworkLine.len == 0) continue;
 
-                if (networkLine.len > 0 and networkLine[0] != ' ' and networkLine[0] != '\t') break;
+                if (networkLine.len > 0 and networkLine[0] != ' ' and networkLine[0] != '\t') {
+                    pending_line = networkLine;
+                    break;
+                }
 
                 if (std.mem.startsWith(u8, trimmedNetworkLine, "- ")) {
                     if (protocol != null) {
@@ -97,6 +105,36 @@ pub fn deserialize(filePath: []const u8) !models.service {
                     .protocol = protocol.?,
                     .environment = environment,
                 });
+            }
+        } else if (std.mem.startsWith(u8, trimmedLine, "technology_stack:")) {
+            while (lines.next()) |techLine| {
+                const trimmedTechLine = std.mem.trim(u8, techLine, LINE_ENDING);
+                if (trimmedTechLine.len == 0) continue;
+
+                if (techLine.len > 0 and techLine[0] != ' ' and techLine[0] != '\t') {
+                    pending_line = techLine;
+                    break;
+                }
+
+                if (std.mem.startsWith(u8, trimmedTechLine, "- ")) {
+                    const tech = std.mem.trim(u8, trimmedTechLine[2..], LINE_ENDING);
+                    try service.technologyStack.append(tech);
+                }
+            }
+        } else if (std.mem.startsWith(u8, trimmedLine, "dependencies:")) {
+            while (lines.next()) |depLine| {
+                const trimmedDepLine = std.mem.trim(u8, depLine, LINE_ENDING);
+                if (trimmedDepLine.len == 0) continue;
+
+                if (depLine.len > 0 and depLine[0] != ' ' and depLine[0] != '\t') {
+                    pending_line = depLine;
+                    break;
+                }
+
+                if (std.mem.startsWith(u8, trimmedDepLine, "- ")) {
+                    const dep = std.mem.trim(u8, trimmedDepLine[2..], LINE_ENDING);
+                    try service.dependencies.append(dep);
+                }
             }
         }
     }

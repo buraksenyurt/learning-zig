@@ -40,3 +40,12 @@ pub fn readFileContent(allocator: std.mem.Allocator, filePath: []const u8) ![]u8
     const content = try file.readToEndAlloc(allocator, fileSize);
     return content;
 }
+
+pub fn printUsage() void {
+    std.debug.print(
+        "Just a simple YAML Deserializer/Serializer for learning purposes.\n\n" ++
+            "Usage: yamlizer <fileName> \n\n" ++
+            "and then you can see the deserialized content in terminal screen.\n\n",
+        .{},
+    );
+}

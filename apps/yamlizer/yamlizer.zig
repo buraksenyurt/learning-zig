@@ -7,23 +7,17 @@ const parser = @import("parser.zig");
 // ve tam tersinin yapılması (serialization) ele alınmaktadır.
 
 pub fn main() !void {
-    const file = "data/cache-service.yaml";
+    const args = try std.process.argsAlloc(std.heap.page_allocator);
+    defer std.process.argsFree(std.heap.page_allocator, args);
+
+    if (args.len < 2) {
+        utility.printUsage();
+        std.process.exit(1);
+    }
+
+    const file = args[1];
     const service = try parser.deserialize(file);
     defer _ = service.deinit();
 
-    const versionStr = try service.version.toString(std.heap.page_allocator);
-    defer std.heap.page_allocator.free(versionStr);
-
-    std.debug.print("Service: {s} ({s})\n", .{
-        service.serviceName,
-        versionStr,
-    });
-    std.debug.print("Domain: {s}\n", .{service.domain});
-    std.debug.print("Network:\n", .{});
-    for (service.network.items) |net| {
-        std.debug.print("- Host: {s}\n", .{net.host});
-        std.debug.print("  Port: {d}\n", .{net.port});
-        std.debug.print("  Protocol: {s}\n", .{net.protocol.toString()});
-        std.debug.print("  Environment: {s}\n", .{net.environment.toString()});
-    }
+    service.print();
 }

@@ -96,4 +96,29 @@ pub const service = struct {
         self.technologyStack.deinit();
         self.dependencies.deinit();
     }
+
+    pub fn print(self: @This()) void {
+        std.debug.print("Service: {s} ({d}.{d}.{d})\n", .{
+            self.serviceName,
+            self.version.major,
+            self.version.minor,
+            self.version.revision,
+        });
+        std.debug.print("Domain: {s}\n", .{self.domain});
+        std.debug.print("Network:\n", .{});
+        for (self.network.items) |net| {
+            std.debug.print("\tProtocol: {s}\n", .{net.protocol.toString()});
+            std.debug.print("\tEndpoint: {s}:{d}\n", .{ net.host, net.port });
+            std.debug.print("\tEnvironment: {s}\n", .{net.environment.toString()});
+        }
+        std.debug.print("Technology Stack:\n\t", .{});
+        for (self.technologyStack.items) |tech| {
+            std.debug.print("{s},", .{tech});
+        }
+        std.debug.print("\nDependencies:\n\t", .{});
+        for (self.dependencies.items) |dep| {
+            std.debug.print("{s},", .{dep});
+        }
+        std.debug.print("\n", .{});
+    }
 };
