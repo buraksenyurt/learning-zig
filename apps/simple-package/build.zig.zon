@@ -1,0 +1,9 @@
+.{
+    .name = .simple_package,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.14.0",
+    .paths = .{
+        "build.zig", "build.zig.zon", "common.zig", "README.md",
+    },
+    .fingerprint = 0x9421796eb3181457,
+}
