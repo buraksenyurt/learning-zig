@@ -34,3 +34,11 @@ Paket tasarlandıktan sonra github'a yüklenir. Herhangibir projede bu paketi ku
 ```bash
 zig fetch --save paketin_github_adresi
 ```
+
+Bu işlem tek başına yeterli değil. Paketi kullanacağımız projenin build.zig dosyasına da ekleme yapmak gerekir. Örneğin aşağıdaki gibi;
+
+```zig
+exe.root_module.addImport("trigo-zig", trigoZig.module("trigo-zig"));
+```
+
+Kullanım ile ilgili olarak [şuradaki paket ve örnek uygulama](https://github.com/buraksenyurt/trigo-zig) incelenebilir.
