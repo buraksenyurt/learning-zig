@@ -32,11 +32,7 @@ pub fn getFromRange(rangeStart: u8, rangeEnd: u8) !u8 {
     try std.posix.getrandom(std.mem.asBytes(&seed));
     var prng = std.Random.DefaultPrng.init(seed);
     const rand = prng.random();
-    while (true) {
-        const value = rand.int(u8);
-        if (value >= rangeStart and value <= rangeEnd) return value;
-    }
-    return 0;
+    return rand.intRangeAtMost(u8, rangeStart, rangeEnd);
 }
 
 test "getU8 generates values within u8 range" {

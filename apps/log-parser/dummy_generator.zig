@@ -10,8 +10,14 @@ pub fn main() !void {
 
     const total_lines = try get_total_lines();
 
+    var seed: u64 = undefined;
+    try std.posix.getrandom(std.mem.asBytes(&seed));
+    var prng = std.Random.DefaultPrng.init(seed);
+    const rand = prng.random();
+
     for (0..total_lines) |i| {
-        if (i % 100 == 0) {
+        const dice_roll = rand.intRangeAtMost(u8, 1, 13);
+        if (dice_roll % 7 == 0) {
             try writer.print("[ERROR] This is a dummy log line number {d}\n", .{i});
         } else {
             try writer.print("[INFO] This is a dummy log line number {d}\n", .{i});
