@@ -1,6 +1,9 @@
 const std = @import("std");
 
 // Bu programın amacı log-parser uygulaması için büyük boyutlu dummy-log dosyası üretmektir.
+// Argüman girilmezse varsayılan olarak 1 milyon satır üretilir. İstenirse argüman olarak üretilecek satır sayısı verilebilir.
+// Örneğin:
+// zig run .\dummy_generator.zig -- 100_000_000
 pub fn main() !void {
     const f = try std.fs.cwd().createFile("dummy-log.txt", .{});
     defer f.close();
